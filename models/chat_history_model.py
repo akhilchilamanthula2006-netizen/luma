@@ -8,11 +8,12 @@ class ChatHistoryModel:
     Represents the chat_history MongoDB collection.
 
     Schema per document:
-        user_id   (str)      – the logged-in user's ID
-        role      (str)      – "user" | "assistant"
-        content   (str)      – raw message text
-        timestamp (datetime) – UTC time of insertion
-        model     (str|None) – Groq model name; only present on assistant messages
+        conversation_id (str)      – ties message to a conversation
+        user_id         (str)      – the logged-in user's ID
+        role            (str)      – "user" | "assistant"
+        content         (str)      – raw message text
+        timestamp       (datetime) – UTC time of insertion
+        model           (str|None) – Groq model name; only present on assistant messages
     """
 
     COLLECTION_NAME = "chat_history"
@@ -25,15 +26,14 @@ class ChatHistoryModel:
         return db[ChatHistoryModel.COLLECTION_NAME]
 
     @staticmethod
-    def save(user_id: str, role: str, content: str, model: str = None) -> None:
+    def save(user_id: str, conversation_id: str, role: str, content: str, model: str = None) -> None:
         """
-        Persist a single message.
-        The `model` field is only stored for assistant messages so it is clear
-        which Groq model produced each response — useful for future audits.
+        Persist a single message tied to a specific conversation.
         """
         doc = {
+            "conversation_id": conversation_id,
             "user_id":   user_id,
-            "role":      role,       # "user" | "assistant"
+            "role":      role,
             "content":   content,
             "timestamp": datetime.utcnow(),
         }
@@ -42,12 +42,32 @@ class ChatHistoryModel:
         ChatHistoryModel.get_collection().insert_one(doc)
 
     @staticmethod
+    def get_by_conversation(conversation_id: str) -> list:
+        """
+        Return all messages for a specific conversation in chronological order.
+        """
+        cursor = (
+            ChatHistoryModel.get_collection()
+            .find(
+                {"conversation_id": conversation_id},
+                {"_id": 0, "role": 1, "content": 1, "timestamp": 1, "model": 1},
+            )
+            .sort("timestamp", pymongo.ASCENDING)
+        )
+        return list(cursor)
+
+    @staticmethod
+    def delete_by_conversation(conversation_id: str) -> None:
+        """
+        Delete all messages belonging to a conversation.
+        """
+        ChatHistoryModel.get_collection().delete_many({"conversation_id": conversation_id})
+
+    @staticmethod
     def get_recent(user_id: str, limit: int = 20) -> list:
         """
-        Return the latest `limit` messages for the user in chronological order
-        (oldest-first), as plain dicts suitable for Jinja2 and Groq's message list.
-
-        Projection excludes the MongoDB _id to avoid serialisation issues.
+        (Legacy) Return the latest `limit` messages for the user.
+        Kept for backward compatibility during transition.
         """
         cursor = (
             ChatHistoryModel.get_collection()
@@ -58,7 +78,6 @@ class ChatHistoryModel:
             .sort("timestamp", pymongo.DESCENDING)
             .limit(limit)
         )
-        # Reverse so the oldest message comes first (chronological for display & AI)
         messages = list(cursor)
         messages.reverse()
         return messages

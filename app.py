@@ -19,6 +19,7 @@ def create_app(config_name=None):
     from routes.wellness import wellness_bp
     from routes.profile import profile_bp
     from routes.settings import settings_bp
+    from routes.conversation import conversation_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -28,6 +29,7 @@ def create_app(config_name=None):
     app.register_blueprint(wellness_bp)
     app.register_blueprint(profile_bp)
     app.register_blueprint(settings_bp)
+    app.register_blueprint(conversation_bp)
 
     # Home route / landing page
     @app.route('/')
