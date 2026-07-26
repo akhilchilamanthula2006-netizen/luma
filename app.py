@@ -1,4 +1,4 @@
-from flask import Flask, render_template, session
+from flask import Flask, render_template, session, redirect, url_for
 from config import config_by_name
 import os
 
@@ -32,6 +32,8 @@ def create_app(config_name=None):
     # Home route / landing page
     @app.route('/')
     def home():
+        if 'user_id' in session:
+            return redirect(url_for('dashboard.index'))
         return render_template('landing.html')
 
     # Global context processor to make session available easily in templates
@@ -39,7 +41,8 @@ def create_app(config_name=None):
     def inject_user():
         return dict(
             is_authenticated=('user_id' in session),
-            username=session.get('username', '')
+            username=session.get('username', ''),
+            user_email=session.get('user_email', '')
         )
 
     return app

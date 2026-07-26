@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Luma - Mental Wellness Companion{% endblock %}</title>
+    <meta name="description" content="Luma is your AI-powered mental wellness companion that helps you reflect, understand emotions, and build healthier habits.">
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS v3 CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563EB',
+                        secondary: '#0F172A',
+                        accent: '#14B8A6',
+                        background: '#F8FAFC',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Custom static CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-background text-secondary font-sans h-screen flex overflow-hidden">
+
+    <!--
+        SIDEBAR
+        -------
+        Collapse-ready: the sidebar has id="app-sidebar".
+        To collapse, toggle the class "sidebar-collapsed" on this element via JS.
+        The main content area has id="app-main" and automatically fills remaining space.
+        A future responsive toggle button can call toggleSidebar() defined at the bottom.
+    -->
+    <aside id="app-sidebar"
+           class="w-64 flex-shrink-0 bg-white border-r border-slate-100 flex flex-col h-full overflow-y-auto transition-all duration-300">
+
+        <!-- Logo -->
+        <div class="h-16 flex items-center px-5 border-b border-slate-100 flex-shrink-0">
+            <a href="{{ url_for('dashboard.index') }}" class="flex items-center space-x-2">
+                <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white shadow-md shadow-primary/20">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                </div>
+                <span class="text-xl font-bold tracking-tight text-secondary sidebar-label">Luma</span>
+            </a>
+        </div>
+
+        <!-- Primary Navigation -->
+        <nav class="flex-grow px-3 py-4 space-y-1" aria-label="Main navigation">
+
+            {% set nav_items = [
+                ('dashboard.index',   'layout-dashboard', 'Dashboard',    url_for('dashboard.index')),
+                ('chat.index',        'message-square',   'AI Chat',      url_for('chat.index')),
+                ('journal.index',     'book-open',        'Journal',      url_for('journal.index')),
+                ('wellness.index',    'heart',            'Wellness Hub', url_for('wellness.index')),
+                ('analytics.index',   'bar-chart-2',      'Analytics',    url_for('analytics.index'))
+            ] %}
+
+            {% for endpoint, icon, label, href in nav_items %}
+                {% set is_active = (request.endpoint == endpoint) %}
+                <a href="{{ href }}"
+                   id="nav-{{ endpoint.split('.')[0] }}"
+                   class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition duration-150
+                          {% if is_active %}
+                              bg-primary/10 text-primary
+                          {% else %}
+                              text-slate-600 hover:bg-slate-50 hover:text-secondary
+                          {% endif %}"
+                   {% if is_active %}aria-current="page"{% endif %}>
+                    <i data-lucide="{{ icon }}"
+                       class="w-4 h-4 flex-shrink-0 {% if is_active %}text-primary{% else %}text-slate-400{% endif %}">
+                    </i>
+                    <span class="sidebar-label">{{ label }}</span>
+                </a>
+            {% endfor %}
+
+        </nav>
+
+        <!-- Divider -->
+        <div class="px-5 sidebar-label">
+            <div class="border-t border-slate-100"></div>
+        </div>
+
+        <!-- Secondary Navigation (Profile, Settings) -->
+        <nav class="px-3 py-3 space-y-1" aria-label="Account navigation">
+
+            {% set secondary_items = [
+                ('profile.index',  'user',     'Profile',  url_for('profile.index')),
+                ('settings.index', 'settings', 'Settings', url_for('settings.index'))
+            ] %}
+
+            {% for endpoint, icon, label, href in secondary_items %}
+                {% set is_active = (request.endpoint == endpoint) %}
+                <a href="{{ href }}"
+                   id="nav-{{ endpoint.split('.')[0] }}"
+                   class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition duration-150
+                          {% if is_active %}
+                              bg-primary/10 text-primary
+                          {% else %}
+                              text-slate-600 hover:bg-slate-50 hover:text-secondary
+                          {% endif %}"
+                   {% if is_active %}aria-current="page"{% endif %}>
+                    <i data-lucide="{{ icon }}"
+                       class="w-4 h-4 flex-shrink-0 {% if is_active %}text-primary{% else %}text-slate-400{% endif %}">
+                    </i>
+                    <span class="sidebar-label">{{ label }}</span>
+                </a>
+            {% endfor %}
+
+            <!-- Logout -->
+            <a href="{{ url_for('auth.logout') }}"
+               id="nav-logout"
+               class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600
+                      hover:bg-rose-50 hover:text-rose-600 transition duration-150">
+                <i data-lucide="log-out" class="w-4 h-4 flex-shrink-0 text-slate-400"></i>
+                <span class="sidebar-label">Logout</span>
+            </a>
+        </nav>
+
+        <!-- User Profile Card -->
+        <div class="px-3 py-4 border-t border-slate-100 sidebar-label">
+            <div class="flex items-center space-x-3 px-3 py-3 bg-slate-50 rounded-xl">
+                <!-- Avatar -->
+                <div class="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm flex-shrink-0">
+                    {{ username[0].upper() if username else 'U' }}
+                </div>
+                <!-- Details -->
+                <div class="min-w-0 flex-1">
+                    <p class="text-sm font-semibold text-secondary truncate">{{ username or 'User' }}</p>
+                    <p class="text-xs text-slate-400 truncate">{{ user_email or '' }}</p>
+                </div>
+            </div>
+        </div>
+
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <div id="app-main" class="flex flex-col flex-1 min-w-0 h-full overflow-hidden">
+
+        <!-- Top Bar -->
+        <header class="h-16 bg-white border-b border-slate-100 flex items-center px-6 flex-shrink-0 justify-between">
+            <div class="flex items-center space-x-3">
+                <!-- Sidebar Toggle Button (hook for future responsive collapse) -->
+                <button id="sidebar-toggle"
+                        onclick="toggleSidebar()"
+                        class="p-2 rounded-lg text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition"
+                        title="Toggle sidebar"
+                        aria-label="Toggle sidebar">
+                    <i data-lucide="panel-left" class="w-5 h-5"></i>
+                </button>
+                <h1 class="text-base font-semibold text-secondary">
+                    {% block page_title %}Luma{% endblock %}
+                </h1>
+            </div>
+            <div class="flex items-center space-x-3">
+                <span class="text-sm text-slate-500 hidden sm:block">{{ username }}</span>
+                <a href="{{ url_for('profile.index') }}"
+                   class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm hover:bg-primary/20 transition"
+                   title="My Profile">
+                    {{ username[0].upper() if username else 'U' }}
+                </a>
+            </div>
+        </header>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="px-6 pt-4 space-y-2 flex-shrink-0">
+                    {% for category, message in messages %}
+                        <div class="p-3 rounded-lg flex items-center space-x-2
+                            {% if category == 'success' %}bg-emerald-50 text-emerald-800 border border-emerald-100
+                            {% elif category == 'error' %}bg-rose-50 text-rose-800 border border-rose-100
+                            {% else %}bg-blue-50 text-blue-800 border border-blue-100{% endif %}">
+                            {% if category == 'success' %}
+                                <i data-lucide="check-circle" class="w-4 h-4 flex-shrink-0"></i>
+                            {% elif category == 'error' %}
+                                <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i>
+                            {% else %}
+                                <i data-lucide="info" class="w-4 h-4 flex-shrink-0"></i>
+                            {% endif %}
+                            <span class="text-sm font-medium">{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Scrollable Page Content -->
+        <main class="flex-1 overflow-y-auto">
+            {% block content %}{% endblock %}
+        </main>
+
+    </div>
+
+    <!-- Initialize Lucide Icons -->
+    <script>
+        lucide.createIcons();
+
+        /**
+         * toggleSidebar()
+         * Collapses/expands the sidebar by toggling label visibility.
+         * Labels are elements with class "sidebar-label".
+         * Designed for easy extension in the responsive UI milestone.
+         */
+        function toggleSidebar() {
+            const sidebar = document.getElementById('app-sidebar');
+            const labels  = sidebar.querySelectorAll('.sidebar-label');
+            const isCollapsed = sidebar.classList.contains('sidebar-collapsed');
+
+            if (isCollapsed) {
+                // Expand
+                sidebar.classList.remove('sidebar-collapsed', 'w-16');
+                sidebar.classList.add('w-64');
+                labels.forEach(el => el.classList.remove('hidden'));
+            } else {
+                // Collapse
+                sidebar.classList.add('sidebar-collapsed', 'w-16');
+                sidebar.classList.remove('w-64');
+                labels.forEach(el => el.classList.add('hidden'));
+            }
+        }
+    </script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+    {% block scripts %}{% endblock %}
+</body>
+</html>

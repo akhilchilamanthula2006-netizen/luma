@@ -41,7 +41,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
                 <div class="flex items-center space-x-2">
-                    <a href="{{ url_for('home') }}" class="flex items-center space-x-2">
+                    <a href="{% if is_authenticated %}{{ url_for('dashboard.index') }}{% else %}{{ url_for('home') }}{% endif %}" class="flex items-center space-x-2">
                         <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white shadow-md shadow-primary/20">
                             <i data-lucide="sparkles" class="w-4 h-4"></i>
                         </div>
@@ -54,10 +54,6 @@
                     <a href="{{ url_for('home') }}" class="text-slate-600 hover:text-primary transition duration-200 text-sm font-medium">Home</a>
                     <a href="{{ url_for('home') }}#features" class="text-slate-600 hover:text-primary transition duration-200 text-sm font-medium">Features</a>
                     <a href="{{ url_for('home') }}#about" class="text-slate-600 hover:text-primary transition duration-200 text-sm font-medium">About</a>
-                    {% if is_authenticated %}
-                        <a href="{{ url_for('dashboard.index') }}" class="text-slate-600 hover:text-primary transition duration-200 text-sm font-medium">Dashboard</a>
-                        <a href="{{ url_for('chat.index') }}" class="text-slate-600 hover:text-primary transition duration-200 text-sm font-medium">AI Companion</a>
-                    {% endif %}
                 </nav>
 
                 <!-- Auth Buttons / User Menu -->
@@ -87,14 +83,7 @@
             <a href="{{ url_for('home') }}" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50">Home</a>
             <a href="{{ url_for('home') }}#features" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50">Features</a>
             <a href="{{ url_for('home') }}#about" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50">About</a>
-            {% if is_authenticated %}
-                <a href="{{ url_for('dashboard.index') }}" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50">Dashboard</a>
-                <a href="{{ url_for('chat.index') }}" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50">AI Companion</a>
-                <div class="border-t border-slate-100 my-2 pt-2">
-                    <div class="px-3 py-2 text-sm text-slate-500">Logged in as {{ username }}</div>
-                    <a href="{{ url_for('auth.logout') }}" class="block px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-red-50">Log Out</a>
-                </div>
-            {% else %}
+            {% if not is_authenticated %}
                 <a href="{{ url_for('auth.login') }}" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50">Login</a>
                 <a href="{{ url_for('auth.signup') }}" class="block text-center bg-primary text-white px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700">Sign Up</a>
             {% endif %}

@@ -28,6 +28,7 @@ def login():
         if user and verify_password(user.password_hash, password):
             session['user_id'] = user.id
             session['username'] = user.username
+            session['user_email'] = user.email
             flash('Welcome back! Successfully logged in.', 'success')
             return redirect(url_for('dashboard.index'))
         else:

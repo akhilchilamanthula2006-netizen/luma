@@ -1,6 +1,7 @@
-{% extends "base.html" %}
+{% extends "app_shell.html" %}
 
 {% block title %}Analytics - Luma{% endblock %}
+{% block page_title %}Analytics{% endblock %}
 
 {% block extra_head %}
 <!-- Chart.js -->
@@ -34,7 +35,7 @@
 </div>
 {% endblock %}
 
-{% block extra_js %}
+{% block scripts %}
 <script>
     // Placeholder chart logic for demonstration
     const ctxMood = document.getElementById('moodChart').getContext('2d');
