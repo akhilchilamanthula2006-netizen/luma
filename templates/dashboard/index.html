@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Luma{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <!-- Welcome Header -->
+    <div class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
+        <div>
+            <h1 class="text-3xl font-bold tracking-tight text-secondary">Good day, {{ username }}</h1>
+            <p class="text-slate-500 mt-1">{{ today_str }} &bull; Here is your mental wellness summary.</p>
+        </div>
+        <div class="flex space-x-3">
+            <a href="{{ url_for('chat.index') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-primary hover:bg-blue-700 shadow-sm transition">
+                <i data-lucide="message-square" class="w-4 h-4 mr-2"></i> Talk to Luma
+            </a>
+            <a href="{{ url_for('journal.index') }}" class="inline-flex items-center px-4 py-2 border border-slate-200 text-sm font-medium rounded-lg text-slate-700 bg-white hover:bg-slate-50 shadow-sm transition">
+                <i data-lucide="book-open" class="w-4 h-4 mr-2"></i> New Entry
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <!-- Streak Card -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center space-x-4">
+            <div class="w-12 h-12 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center">
+                <i data-lucide="zap" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <span class="text-xs text-slate-400 font-medium uppercase tracking-wider block">Streak</span>
+                <span class="text-2xl font-bold text-secondary">{{ streak_days }}</span>
+            </div>
+        </div>
+
+        <!-- Latest Mood Card -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center space-x-4">
+            <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                <i data-lucide="smile" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <span class="text-xs text-slate-400 font-medium uppercase tracking-wider block">Latest Mood</span>
+                <span class="text-2xl font-bold text-secondary">
+                    {% if latest_mood %}
+                        {% if latest_mood.mood == 'Happy' %}😊
+                        {% elif latest_mood.mood == 'Calm' %}😌
+                        {% elif latest_mood.mood == 'Neutral' %}😐
+                        {% elif latest_mood.mood == 'Sad' %}😢
+                        {% elif latest_mood.mood == 'Stressed' %}😰
+                        {% else %}🙂{% endif %}
+                        {{ latest_mood.mood }}
+                    {% else %}
+                        Not Logged
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+        <!-- Wellness Level Card -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center space-x-4">
+            <div class="w-12 h-12 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center">
+                <i data-lucide="heart" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <span class="text-xs text-slate-400 font-medium uppercase tracking-wider block">Wellness Level</span>
+                <span class="text-2xl font-bold text-secondary">{{ wellness_level }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left 2 Cols: Activities & History -->
+        <div class="lg:col-span-2 space-y-8">
+            <!-- Recommended Activities -->
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                <h2 class="text-xl font-bold text-secondary mb-4">Recommended Activities</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="p-4 border border-slate-100 hover:border-blue-100 rounded-xl hover:bg-blue-50/10 transition duration-200 flex items-start space-x-3">
+                        <div class="p-2 bg-blue-50 rounded-lg text-primary">
+                            <i data-lucide="wind" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-sm text-secondary">Box Breathing</h4>
+                            <p class="text-xs text-slate-500 mt-1">Calm your nervous system in 4 minutes.</p>
+                            <a href="{{ url_for('wellness.index') }}" class="text-xs font-semibold text-primary mt-2 inline-block">Start Exercise &rarr;</a>
+                        </div>
+                    </div>
+
+                    <div class="p-4 border border-slate-100 hover:border-blue-100 rounded-xl hover:bg-blue-50/10 transition duration-200 flex items-start space-x-3">
+                        <div class="p-2 bg-teal-50 rounded-lg text-accent">
+                            <i data-lucide="headphones" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-sm text-secondary">Morning Focus Audio</h4>
+                            <p class="text-xs text-slate-500 mt-1">Start your day with clarity and peace.</p>
+                            <a href="{{ url_for('wellness.index') }}" class="text-xs font-semibold text-primary mt-2 inline-block">Listen Now &rarr;</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Journal Entries -->
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-secondary">Recent Reflection Journal</h2>
+                    <a href="{{ url_for('journal.index') }}" class="text-sm font-semibold text-primary hover:underline">View All</a>
+                </div>
+                <div class="border-t border-slate-50 divide-y divide-slate-50">
+                    <div class="py-4">
+                        <div class="flex justify-between items-start">
+                            <h3 class="font-semibold text-slate-800 text-sm">Finding balance in daily routine</h3>
+                            <span class="text-xs text-slate-400">Today, 9:30 AM</span>
+                        </div>
+                        <p class="text-xs text-slate-550 mt-1 line-clamp-2">
+                            Reflected on work hours and how taking short walks outside is helping my overall stress levels...
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Col: Mood Check-In & Charts -->
+        <div class="space-y-8">
+            <!-- Daily Mood Check-In Card -->
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                <h2 class="text-xl font-bold text-secondary mb-2">Daily Mood Check-In</h2>
+                <p class="text-xs text-slate-400 mb-6">How are you feeling at this moment?</p>
+                
+                <form action="{{ url_for('dashboard.check_in_mood') }}" method="POST">
+                    <div class="grid grid-cols-5 gap-2 mb-4">
+                        <!-- Happy -->
+                        <button type="submit" name="mood" value="Happy" class="flex flex-col items-center p-2 rounded-xl border hover:border-blue-500 hover:bg-blue-50/20 transition duration-200 {% if latest_mood and latest_mood.mood == 'Happy' %}border-blue-500 bg-blue-50/30{% else %}border-slate-100{% endif %}">
+                            <span class="text-2xl mb-1">😊</span>
+                            <span class="text-[10px] font-medium text-slate-600">Happy</span>
+                        </button>
+                        <!-- Calm -->
+                        <button type="submit" name="mood" value="Calm" class="flex flex-col items-center p-2 rounded-xl border hover:border-blue-500 hover:bg-blue-50/20 transition duration-200 {% if latest_mood and latest_mood.mood == 'Calm' %}border-blue-500 bg-blue-50/30{% else %}border-slate-100{% endif %}">
+                            <span class="text-2xl mb-1">😌</span>
+                            <span class="text-[10px] font-medium text-slate-600">Calm</span>
+                        </button>
+                        <!-- Neutral -->
+                        <button type="submit" name="mood" value="Neutral" class="flex flex-col items-center p-2 rounded-xl border hover:border-blue-500 hover:bg-blue-50/20 transition duration-200 {% if latest_mood and latest_mood.mood == 'Neutral' %}border-blue-500 bg-blue-50/30{% else %}border-slate-100{% endif %}">
+                            <span class="text-2xl mb-1">😐</span>
+                            <span class="text-[10px] font-medium text-slate-600">Neutral</span>
+                        </button>
+                        <!-- Sad -->
+                        <button type="submit" name="mood" value="Sad" class="flex flex-col items-center p-2 rounded-xl border hover:border-blue-500 hover:bg-blue-50/20 transition duration-200 {% if latest_mood and latest_mood.mood == 'Sad' %}border-blue-500 bg-blue-50/30{% else %}border-slate-100{% endif %}">
+                            <span class="text-2xl mb-1">😢</span>
+                            <span class="text-[10px] font-medium text-slate-600">Sad</span>
+                        </button>
+                        <!-- Stressed -->
+                        <button type="submit" name="mood" value="Stressed" class="flex flex-col items-center p-2 rounded-xl border hover:border-blue-500 hover:bg-blue-50/20 transition duration-200 {% if latest_mood and latest_mood.mood == 'Stressed' %}border-blue-500 bg-blue-50/30{% else %}border-slate-100{% endif %}">
+                            <span class="text-2xl mb-1">😰</span>
+                            <span class="text-[10px] font-medium text-slate-600">Stressed</span>
+                        </button>
+                    </div>
+                </form>
+                
+                {% if latest_mood %}
+                <div class="mt-4 pt-4 border-t border-slate-100 text-xs text-slate-400">
+                    Last check-in: <span class="font-medium text-slate-650">{{ latest_mood.timestamp.strftime('%I:%M %p') }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Weekly Preview stub -->
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                <h2 class="text-xl font-bold text-secondary mb-4">Weekly Mood Path</h2>
+                <div class="h-40 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 text-sm">
+                    <div class="text-center">
+                        <i data-lucide="bar-chart-2" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
+                        <span>Weekly mood charts will appear here.</span>
+                    </div>
+                </div>
+                <div class="mt-4 text-center">
+                    <a href="{{ url_for('analytics.index') }}" class="text-xs font-semibold text-primary hover:underline">Open Analytics &rarr;</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

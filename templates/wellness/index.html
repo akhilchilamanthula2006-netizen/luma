@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Wellness Hub - Luma{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold tracking-tight text-secondary">Wellness Hub</h1>
+        <p class="text-slate-500 mt-1">Exercises, meditations, and breathing guides to ground you.</p>
+    </div>
+
+    <!-- Categories -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Breathing Space -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+            <div class="flex items-center space-x-2 text-primary">
+                <i data-lucide="wind" class="w-6 h-6"></i>
+                <h2 class="text-xl font-bold text-secondary">Breathing Exercises</h2>
+            </div>
+            <p class="text-sm text-slate-500">Interactive tools to stabilize heartbeat and relax thoughts.</p>
+            <div class="p-4 border border-slate-100 hover:border-blue-100 rounded-xl flex justify-between items-center bg-slate-50/50 hover:bg-white transition duration-200">
+                <div>
+                    <h4 class="font-semibold text-sm text-secondary">Box Breathing</h4>
+                    <span class="text-xs text-slate-400">Duration: 4 mins</span>
+                </div>
+                <button class="px-4 py-2 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition">Start</button>
+            </div>
+        </div>
+
+        <!-- Meditation Room -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+            <div class="flex items-center space-x-2 text-accent">
+                <i data-lucide="headphones" class="w-6 h-6"></i>
+                <h2 class="text-xl font-bold text-secondary">Meditation & Soundscapes</h2>
+            </div>
+            <p class="text-sm text-slate-500">Curated background noise, relaxing sounds, and audio guides.</p>
+            <div class="p-4 border border-slate-100 hover:border-blue-100 rounded-xl flex justify-between items-center bg-slate-50/50 hover:bg-white transition duration-200">
+                <div>
+                    <h4 class="font-semibold text-sm text-secondary">Mindful Morning Audio</h4>
+                    <span class="text-xs text-slate-400">Duration: 10 mins</span>
+                </div>
+                <button class="px-4 py-2 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition">Listen</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics - Luma{% endblock %}
+
+{% block extra_head %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold tracking-tight text-secondary">Analytics Dashboard</h1>
+        <p class="text-slate-500 mt-1">Track and understand your emotional trends over time.</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Mood Chart -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+            <h3 class="text-lg font-bold text-secondary mb-4">Mood Trends (7 Days)</h3>
+            <div class="h-64 flex items-center justify-center bg-slate-50 rounded-xl relative">
+                <canvas id="moodChart" class="p-2"></canvas>
+            </div>
+        </div>
+
+        <!-- Energy Level Chart -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+            <h3 class="text-lg font-bold text-secondary mb-4">Energy Distribution</h3>
+            <div class="h-64 flex items-center justify-center bg-slate-50 rounded-xl relative">
+                <canvas id="energyChart" class="p-2"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Placeholder chart logic for demonstration
+    const ctxMood = document.getElementById('moodChart').getContext('2d');
+    const moodChart = new Chart(ctxMood, {
+        type: 'line',
+        data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [{
+                label: 'Mood Rating',
+                data: [3, 4, 3, 5, 4, 5, 4],
+                borderColor: '#2563EB',
+                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { min: 1, max: 5 }
+            }
+        }
+    });
+
+    const ctxEnergy = document.getElementById('energyChart').getContext('2d');
+    const energyChart = new Chart(ctxEnergy, {
+        type: 'bar',
+        data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [{
+                label: 'Energy Level',
+                data: [4, 2, 5, 4, 3, 5, 4],
+                backgroundColor: '#14B8A6',
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { min: 1, max: 5 }
+            }
+        }
+    });
+</script>
+{% endblock %}

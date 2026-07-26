@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Luma - Mental Wellness Companion{% endblock %}</title>
+    <meta name="description" content="Luma is your AI-powered mental wellness companion that helps you reflect, understand emotions, and build healthier habits.">
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS v3 CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563EB',
+                        secondary: '#0F172A',
+                        accent: '#14B8A6',
+                        background: '#F8FAFC',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Custom static CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-background text-secondary font-sans min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <header class="bg-white border-b border-slate-100 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center space-x-2">
+                    <a href="{{ url_for('home') }}" class="flex items-center space-x-2">
+                        <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white shadow-md shadow-primary/20">
+                            <i data-lucide="sparkles" class="w-4 h-4"></i>
+                        </div>
+                        <span class="text-xl font-bold tracking-tight text-secondary">Luma</span>
+                    </a>
+                </div>
+                
+                <!-- Desktop Navigation -->
+                <nav class="hidden md:flex items-center space-x-8">
+                    <a href="{{ url_for('home') }}" class="text-slate-600 hover:text-primary transition duration-200 text-sm font-medium">Home</a>
+                    <a href="{{ url_for('home') }}#features" class="text-slate-600 hover:text-primary transition duration-200 text-sm font-medium">Features</a>
+                    <a href="{{ url_for('home') }}#about" class="text-slate-600 hover:text-primary transition duration-200 text-sm font-medium">About</a>
+                    {% if is_authenticated %}
+                        <a href="{{ url_for('dashboard.index') }}" class="text-slate-600 hover:text-primary transition duration-200 text-sm font-medium">Dashboard</a>
+                        <a href="{{ url_for('chat.index') }}" class="text-slate-600 hover:text-primary transition duration-200 text-sm font-medium">AI Companion</a>
+                    {% endif %}
+                </nav>
+
+                <!-- Auth Buttons / User Menu -->
+                <div class="hidden md:flex items-center space-x-4">
+                    {% if is_authenticated %}
+                        <div class="flex items-center space-x-3">
+                            <span class="text-sm font-medium text-slate-700">Hello, {{ username }}</span>
+                            <a href="{{ url_for('auth.logout') }}" class="bg-slate-50 border border-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 transition duration-200">Log Out</a>
+                        </div>
+                    {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="text-slate-700 hover:text-primary transition duration-200 text-sm font-medium">Login</a>
+                        <a href="{{ url_for('auth.signup') }}" class="bg-primary text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition duration-200 shadow-sm">Sign Up</a>
+                    {% endif %}
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-button" class="text-slate-500 hover:text-slate-600 focus:outline-none">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden border-b border-slate-100 bg-white px-4 pt-2 pb-4 space-y-2">
+            <a href="{{ url_for('home') }}" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50">Home</a>
+            <a href="{{ url_for('home') }}#features" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50">Features</a>
+            <a href="{{ url_for('home') }}#about" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50">About</a>
+            {% if is_authenticated %}
+                <a href="{{ url_for('dashboard.index') }}" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50">Dashboard</a>
+                <a href="{{ url_for('chat.index') }}" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50">AI Companion</a>
+                <div class="border-t border-slate-100 my-2 pt-2">
+                    <div class="px-3 py-2 text-sm text-slate-500">Logged in as {{ username }}</div>
+                    <a href="{{ url_for('auth.logout') }}" class="block px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-red-50">Log Out</a>
+                </div>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50">Login</a>
+                <a href="{{ url_for('auth.signup') }}" class="block text-center bg-primary text-white px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700">Sign Up</a>
+            {% endif %}
+        </div>
+    </header>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+                {% for category, message in messages %}
+                    <div class="p-4 rounded-lg flex items-center justify-between {% if category == 'success' %}bg-emerald-50 text-emerald-800 border border-emerald-100{% elif category == 'error' %}bg-rose-50 text-rose-800 border border-rose-100{% else %}bg-blue-50 text-blue-800 border border-blue-100{% endif %}">
+                        <div class="flex items-center space-x-2">
+                            {% if category == 'success' %}
+                                <i data-lucide="check-circle" class="w-5 h-5"></i>
+                            {% elif category == 'error' %}
+                                <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                            {% else %}
+                                <i data-lucide="info" class="w-5 h-5"></i>
+                            {% endif %}
+                            <span class="text-sm font-medium">{{ message }}</span>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content Area -->
+    <main class="flex-grow">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-100 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white shadow-sm">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    </div>
+                    <span class="text-lg font-bold tracking-tight text-secondary">Luma</span>
+                </div>
+                <p class="text-slate-400 text-sm">&copy; 2026 Luma. Listening Beyond Words, Caring Beyond Boundaries.</p>
+                <div class="flex space-x-6 text-sm">
+                    <a href="#" class="text-slate-500 hover:text-primary transition duration-150">Privacy Policy</a>
+                    <a href="#" class="text-slate-500 hover:text-primary transition duration-150">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Initialize Lucide Icons & Mobile Menu -->
+    <script>
+        lucide.createIcons();
+
+        const mobileMenuBtn = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        if (mobileMenuBtn && mobileMenu) {
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+        }
+    </script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

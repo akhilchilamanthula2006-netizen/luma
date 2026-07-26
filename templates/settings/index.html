@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Luma{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold tracking-tight text-secondary">Settings</h1>
+        <p class="text-slate-500 mt-1">Configure your companion, daily reminders, and security preferences.</p>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-6">
+        <div>
+            <h2 class="text-lg font-bold text-secondary mb-4">AI Companion Preferences</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Tone of Voice</label>
+                    <select class="block w-full max-w-xs border border-slate-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <option>Empathetic & Warm</option>
+                        <option>Direct & Analytical</option>
+                        <option>Soft & Quiet</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="border-t border-slate-100 pt-6">
+            <h2 class="text-lg font-bold text-secondary mb-4">Security</h2>
+            <button class="px-4 py-2 border border-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl transition">Change Password</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

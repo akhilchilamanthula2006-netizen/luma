@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - Luma{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold tracking-tight text-secondary">My Profile</h1>
+        <p class="text-slate-500 mt-1">Manage your account information and preferences.</p>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-6">
+        <div class="flex items-center space-x-4">
+            <div class="w-16 h-16 rounded-full bg-blue-100 text-primary flex items-center justify-center text-2xl font-bold">
+                {{ username[0].upper() if username else 'U' }}
+            </div>
+            <div>
+                <h3 class="text-xl font-bold text-secondary">{{ username or 'User' }}</h3>
+                <span class="text-sm text-slate-400">Registered member</span>
+            </div>
+        </div>
+
+        <div class="border-t border-slate-100 pt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Username</label>
+                <div class="text-sm font-medium text-secondary">{{ username or 'User' }}</div>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Email</label>
+                <div class="text-sm font-medium text-secondary">user@example.com</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
