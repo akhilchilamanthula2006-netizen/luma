@@ -37,7 +37,7 @@
                         {% for conv in convs %}
                             {% set is_active = conv.id == active_conversation_id %}
                             <div class="group relative flex items-center justify-between rounded-xl p-3 cursor-pointer transition-colors {% if is_active %}bg-slate-800 ring-1 ring-violet-500{% else %}hover:bg-slate-800{% endif %}"
-                                 onclick="window.location.href='{{ url_for('chat.chat_conversation', conversation_id=conv.id) }}'">
+                                 onclick="window.location.href='/chat/{{ conv.id }}'">
                                 
                                 <div class="flex-1 min-w-0 pr-4">
                                     <div class="text-sm font-medium text-slate-200 truncate">{{ conv.title }}</div>
@@ -130,7 +130,7 @@
                             {"icon": "💬", "text": "Just Want To Talk", "desc": "A casual, friendly chat"}
                         ] %}
                         {% for sug in suggestions %}
-                        <button onclick="startChatWith('{{ sug.text }}')" class="flex items-start gap-4 p-4 text-left bg-white border border-slate-200 hover:border-violet-300 hover:shadow-md hover:bg-violet-50/50 rounded-2xl transition-all duration-200 group">
+                        <div role="button" tabindex="0" onclick="startChatWith('{{ sug.text }}')" onkeydown="if(event.key === 'Enter') startChatWith('{{ sug.text }}')" class="flex items-start gap-4 p-4 text-left bg-white border border-slate-200 hover:border-violet-300 hover:shadow-md hover:bg-violet-50/50 rounded-2xl transition-all duration-200 group cursor-pointer focus:outline-none focus:ring-2 focus:ring-violet-400">
                             <div class="w-10 h-10 rounded-full bg-slate-50 group-hover:bg-white flex items-center justify-center text-xl flex-shrink-0 transition-colors">
                                 {{ sug.icon }}
                             </div>
@@ -138,7 +138,7 @@
                                 <h3 class="font-semibold text-slate-700 group-hover:text-violet-700 transition-colors">{{ sug.text }}</h3>
                                 <p class="text-sm text-slate-500">{{ sug.desc }}</p>
                             </div>
-                        </button>
+                        </div>
                         {% endfor %}
                     </div>
                 </div>
@@ -265,8 +265,8 @@
 {% block scripts %}
 <script>
     // State
-    const activeConversationId = {{ (active_conversation_id or '')|tojson }};
-    const username = {{ (username or '')|tojson }};
+    const activeConversationId = '{{ active_conversation_id or "" }}';
+    const username = '{{ username or "" }}';
     
     // Elements
     const form = document.getElementById("chat-form");
