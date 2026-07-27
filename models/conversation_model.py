@@ -117,6 +117,38 @@ class ConversationModel:
         )
 
     @staticmethod
+    def update_emotion_metadata(conversation_id: str, emotion: dict) -> None:
+        """
+        Persist emotion analysis results onto the conversation document.
+
+        Called after every successful AI analysis so the conversation always
+        carries its latest emotional context. This allows the dashboard,
+        analytics, and sidebar to surface mood information without querying
+        mood_logs separately.
+
+        Fields written:
+            last_detected_mood  (str)      – primary_mood from analysis
+            dominant_mood       (str)      – same as primary_mood for now;
+                                            reserved for future aggregation
+            risk_level          (str)      – low | medium | high
+            updated_at          (datetime) – UTC timestamp of this update
+        """
+        try:
+            obj_id = ObjectId(conversation_id)
+        except Exception:
+            return
+
+        ConversationModel.get_collection().update_one(
+            {"_id": obj_id},
+            {"$set": {
+                "last_detected_mood": emotion.get("primary_mood", "Neutral"),
+                "dominant_mood":      emotion.get("primary_mood", "Neutral"),
+                "risk_level":         emotion.get("risk_level", "low"),
+                "updated_at":         datetime.utcnow(),
+            }}
+        )
+
+    @staticmethod
     def delete(conversation_id: str, user_id: str) -> bool:
         """Deletes the conversation if user_id matches."""
         try:

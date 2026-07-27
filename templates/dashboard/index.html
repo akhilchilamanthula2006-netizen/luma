@@ -48,8 +48,14 @@
                         {% elif latest_mood.mood == 'Neutral' %}😐
                         {% elif latest_mood.mood == 'Sad' %}😢
                         {% elif latest_mood.mood == 'Stressed' %}😰
+                        {% elif latest_mood.mood == 'Anxious' %}😟
+                        {% elif latest_mood.mood == 'Angry' %}😠
+                        {% elif latest_mood.mood == 'Lonely' %}🥺
                         {% else %}🙂{% endif %}
                         {{ latest_mood.mood }}
+                        {% if latest_mood.source == 'ai_chat' %}
+                        <span class="block text-xs font-normal text-slate-400 mt-0.5">via AI Chat</span>
+                        {% endif %}
                     {% else %}
                         Not Logged
                     {% endif %}
@@ -59,12 +65,23 @@
 
         <!-- Wellness Level Card -->
         <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center space-x-4">
-            <div class="w-12 h-12 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center">
+            <div class="w-12 h-12 rounded-xl
+                {% if wellness_score >= 2 %}bg-emerald-50 text-emerald-600
+                {% elif wellness_score >= 1 %}bg-teal-50 text-teal-600
+                {% elif wellness_score >= 0 %}bg-blue-50 text-blue-600
+                {% else %}bg-rose-50 text-rose-600{% endif %}
+                flex items-center justify-center">
                 <i data-lucide="heart" class="w-6 h-6"></i>
             </div>
             <div>
                 <span class="text-xs text-slate-400 font-medium uppercase tracking-wider block">Wellness Level</span>
-                <span class="text-2xl font-bold text-secondary">{{ wellness_level }}</span>
+                <span class="text-2xl font-bold
+                    {% if wellness_score >= 2 %}text-emerald-600
+                    {% elif wellness_score >= 1 %}text-teal-600
+                    {% elif wellness_score >= 0 %}text-secondary
+                    {% else %}text-rose-600{% endif %}">
+                    {{ wellness_level }}
+                </span>
             </div>
         </div>
     </div>
@@ -129,32 +146,27 @@
                 <p class="text-xs text-slate-400 mb-6">How are you feeling at this moment?</p>
                 
                 <form action="{{ url_for('dashboard.check_in_mood') }}" method="POST">
-                    <div class="grid grid-cols-5 gap-2 mb-4">
-                        <!-- Happy -->
-                        <button type="submit" name="mood" value="Happy" class="flex flex-col items-center p-2 rounded-xl border hover:border-blue-500 hover:bg-blue-50/20 transition duration-200 {% if latest_mood and latest_mood.mood == 'Happy' %}border-blue-500 bg-blue-50/30{% else %}border-slate-100{% endif %}">
-                            <span class="text-2xl mb-1">😊</span>
-                            <span class="text-[10px] font-medium text-slate-600">Happy</span>
+                    {# 8-mood grid: 4 across top row, 4 across bottom row #}
+                    <div class="grid grid-cols-4 gap-2 mb-4">
+                        {% set mood_options = [
+                            ('Happy',    '😊'),
+                            ('Calm',     '😌'),
+                            ('Neutral',  '😐'),
+                            ('Sad',      '😢'),
+                            ('Stressed', '😰'),
+                            ('Anxious',  '😟'),
+                            ('Angry',    '😠'),
+                            ('Lonely',   '🥺'),
+                        ] %}
+                        {% for mood_val, emoji in mood_options %}
+                        <button type="submit" name="mood" value="{{ mood_val }}"
+                                class="flex flex-col items-center p-2 rounded-xl border transition duration-200
+                                       hover:border-blue-500 hover:bg-blue-50/20
+                                       {% if latest_mood and latest_mood.mood == mood_val %}border-blue-500 bg-blue-50/30{% else %}border-slate-100{% endif %}">
+                            <span class="text-2xl mb-1">{{ emoji }}</span>
+                            <span class="text-[10px] font-medium text-slate-600">{{ mood_val }}</span>
                         </button>
-                        <!-- Calm -->
-                        <button type="submit" name="mood" value="Calm" class="flex flex-col items-center p-2 rounded-xl border hover:border-blue-500 hover:bg-blue-50/20 transition duration-200 {% if latest_mood and latest_mood.mood == 'Calm' %}border-blue-500 bg-blue-50/30{% else %}border-slate-100{% endif %}">
-                            <span class="text-2xl mb-1">😌</span>
-                            <span class="text-[10px] font-medium text-slate-600">Calm</span>
-                        </button>
-                        <!-- Neutral -->
-                        <button type="submit" name="mood" value="Neutral" class="flex flex-col items-center p-2 rounded-xl border hover:border-blue-500 hover:bg-blue-50/20 transition duration-200 {% if latest_mood and latest_mood.mood == 'Neutral' %}border-blue-500 bg-blue-50/30{% else %}border-slate-100{% endif %}">
-                            <span class="text-2xl mb-1">😐</span>
-                            <span class="text-[10px] font-medium text-slate-600">Neutral</span>
-                        </button>
-                        <!-- Sad -->
-                        <button type="submit" name="mood" value="Sad" class="flex flex-col items-center p-2 rounded-xl border hover:border-blue-500 hover:bg-blue-50/20 transition duration-200 {% if latest_mood and latest_mood.mood == 'Sad' %}border-blue-500 bg-blue-50/30{% else %}border-slate-100{% endif %}">
-                            <span class="text-2xl mb-1">😢</span>
-                            <span class="text-[10px] font-medium text-slate-600">Sad</span>
-                        </button>
-                        <!-- Stressed -->
-                        <button type="submit" name="mood" value="Stressed" class="flex flex-col items-center p-2 rounded-xl border hover:border-blue-500 hover:bg-blue-50/20 transition duration-200 {% if latest_mood and latest_mood.mood == 'Stressed' %}border-blue-500 bg-blue-50/30{% else %}border-slate-100{% endif %}">
-                            <span class="text-2xl mb-1">😰</span>
-                            <span class="text-[10px] font-medium text-slate-600">Stressed</span>
-                        </button>
+                        {% endfor %}
                     </div>
                 </form>
                 
