@@ -2,7 +2,9 @@ from flask import Blueprint, render_template, session, redirect, url_for, reques
 from datetime import datetime
 
 from services.mood_service import MoodService
+from services.journal_service import JournalService
 from services.intelligence_service import IntelligenceService
+from models.mood_model import MoodModel
 
 dashboard_bp = Blueprint('dashboard', __name__, url_prefix='/dashboard')
 
@@ -16,8 +18,29 @@ def index():
     user_id  = session['user_id']
     username = session['username']
 
+    # Fetch active journal entries for the user
+    all_journals = JournalService.list_entries(user_id)
+    recent_journals = all_journals[:3]
+
     latest_mood = MoodService.get_latest_mood(user_id)
     today_str   = datetime.now().strftime("%A, %B %d, %Y")
+
+    # Evaluate if the latest journal entry is newer than the latest mood log
+    if all_journals:
+        latest_journal = all_journals[0]
+        journal_mood = latest_journal.emotion_snapshot.get("primary_mood") if latest_journal.emotion_snapshot else None
+        
+        if journal_mood:
+            journal_ts = latest_journal.updated_at or latest_journal.created_at
+            if not latest_mood or (journal_ts and latest_mood.timestamp and journal_ts > latest_mood.timestamp):
+                latest_mood = MoodModel(
+                    user_id=user_id,
+                    mood=journal_mood,
+                    score=IntelligenceService.compute_wellness_score(journal_mood),
+                    source="journal",
+                    timestamp=journal_ts,
+                    notes=latest_journal.emotion_snapshot.get("emotion_reason", "")
+                )
 
     # Compute a real wellness score + label from the latest mood.
     # Falls back to "Recovering" (score 0) when no mood has been logged yet.
@@ -36,6 +59,7 @@ def index():
         username=username,
         today_str=today_str,
         latest_mood=latest_mood,
+        recent_journals=recent_journals,
         streak_days=streak_days,
         wellness_level=wellness_level,
         wellness_score=wellness_score,

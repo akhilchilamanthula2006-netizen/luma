@@ -232,6 +232,117 @@
             }
         }
     </script>
+
+    <!-- Journal Security Password Verification Modal -->
+    <div id="journal-auth-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm hidden" aria-hidden="true">
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-xl max-w-md w-full p-6 space-y-5 mx-4">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="lock" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-secondary">Security Verification</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">For your privacy, please verify your password.</p>
+                </div>
+            </div>
+
+            <form id="journal-auth-form" class="space-y-4" onsubmit="event.preventDefault(); handleJournalPasswordVerify();">
+                <div>
+                    <label for="journal-auth-password" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">Current Password</label>
+                    <input type="password" id="journal-auth-password" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent text-sm transition" placeholder="Enter your current password..." required autocomplete="current-password">
+                    <p id="journal-auth-error" class="hidden text-xs text-rose-600 font-medium flex items-center gap-1 mt-1.5">
+                        <i data-lucide="alert-circle" class="w-3.5 h-3.5 flex-shrink-0"></i>
+                        <span id="journal-auth-error-text">Incorrect password.</span>
+                    </p>
+                </div>
+
+                <div class="flex items-center justify-end space-x-2 border-t border-slate-50 pt-4">
+                    <button type="button" onclick="closeJournalPasswordModal();" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition">
+                        Cancel
+                    </button>
+                    <button type="submit" id="journal-auth-submit-btn" class="px-5 py-2 text-sm font-semibold text-white bg-primary hover:bg-blue-700 rounded-xl transition shadow-sm flex items-center gap-1.5">
+                        <span>Verify & Open</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openJournalPasswordModal() {
+            const modal = document.getElementById('journal-auth-modal');
+            const passInput = document.getElementById('journal-auth-password');
+            const errorEl = document.getElementById('journal-auth-error');
+            if (modal) {
+                modal.classList.remove('hidden');
+                if (errorEl) errorEl.classList.add('hidden');
+                if (passInput) {
+                    passInput.value = '';
+                    setTimeout(() => passInput.focus(), 100);
+                }
+            }
+        }
+
+        function closeJournalPasswordModal() {
+            const modal = document.getElementById('journal-auth-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        }
+
+        async function handleJournalPasswordVerify() {
+            const passInput = document.getElementById('journal-auth-password');
+            const errorEl = document.getElementById('journal-auth-error');
+            const errorText = document.getElementById('journal-auth-error-text');
+            const submitBtn = document.getElementById('journal-auth-submit-btn');
+
+            if (!passInput || !passInput.value) return;
+
+            errorEl.classList.add('hidden');
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-75');
+
+            try {
+                const response = await fetch("{{ url_for('journal.verify_journal_password') }}", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: passInput.value })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    closeJournalPasswordModal();
+                    window.location.href = "{{ url_for('journal.index') }}";
+                } else {
+                    errorText.textContent = data.error || "Incorrect password.";
+                    errorEl.classList.remove('hidden');
+                    passInput.focus();
+                    passInput.select();
+                }
+            } catch (err) {
+                errorText.textContent = "Verification failed. Please try again.";
+                errorEl.classList.remove('hidden');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-75');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Attach click interceptor to Journal links (sidebar nav and dashboard shortcuts)
+            const targetHref = "{{ url_for('journal.index') }}";
+            document.querySelectorAll('a[href="' + targetHref + '"], #nav-journal').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    // Do not block navigation if user is already inside the journal module
+                    if (window.location.pathname.startsWith('/journal')) return;
+                    e.preventDefault();
+                    openJournalPasswordModal();
+                });
+            });
+        });
+    </script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     {% block extra_js %}{% endblock %}
     {% block scripts %}{% endblock %}

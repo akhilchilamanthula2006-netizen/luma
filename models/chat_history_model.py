@@ -35,7 +35,7 @@ class ChatHistoryModel:
             "user_id":   user_id,
             "role":      role,
             "content":   content,
-            "timestamp": datetime.utcnow(),
+            "timestamp": datetime.now(),
         }
         if model:
             doc["model"] = model

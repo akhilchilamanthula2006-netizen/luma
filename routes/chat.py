@@ -178,7 +178,7 @@ def send():
         ConversationModel.set_title(conversation_id, generated_title)
 
     # ── 9. Build response ─────────────────────────────────────────────────────
-    timestamp = datetime.now(timezone.utc).strftime("%I:%M %p")
+    timestamp = datetime.now().strftime("%I:%M %p")
 
     response_data = {
         "reply":                reply,

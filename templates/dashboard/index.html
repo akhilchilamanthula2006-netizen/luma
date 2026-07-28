@@ -55,6 +55,8 @@
                         {{ latest_mood.mood }}
                         {% if latest_mood.source == 'ai_chat' %}
                         <span class="block text-xs font-normal text-slate-400 mt-0.5">via AI Chat</span>
+                        {% elif latest_mood.source == 'journal' %}
+                        <span class="block text-xs font-normal text-slate-400 mt-0.5">via Journal</span>
                         {% endif %}
                     {% else %}
                         Not Logged
@@ -125,15 +127,45 @@
                     <a href="{{ url_for('journal.index') }}" class="text-sm font-semibold text-primary hover:underline">View All</a>
                 </div>
                 <div class="border-t border-slate-50 divide-y divide-slate-50">
-                    <div class="py-4">
-                        <div class="flex justify-between items-start">
-                            <h3 class="font-semibold text-slate-800 text-sm">Finding balance in daily routine</h3>
-                            <span class="text-xs text-slate-400">Today, 9:30 AM</span>
+                    {% if recent_journals %}
+                        {% for j in recent_journals %}
+                        <div class="py-4">
+                            <div class="flex justify-between items-start">
+                                <a href="{{ url_for('journal.view_entry', entry_id=j.id) }}" class="font-semibold text-slate-800 text-sm hover:text-primary transition truncate max-w-[70%]">
+                                    {{ j.title or 'Untitled Reflection' }}
+                                </a>
+                                <span class="text-xs text-slate-400 font-medium">
+                                    {{ j.created_at.strftime('%b %d, %I:%M %p') if j.created_at else '' }}
+                                </span>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-1 line-clamp-2">
+                                {{ j.content }}
+                            </p>
+                            {% if j.emotion_snapshot and j.emotion_snapshot.primary_mood %}
+                            <div class="mt-2 flex items-center gap-1.5">
+                                {% set mood = j.emotion_snapshot.primary_mood %}
+                                {% set emoji = "😐" %}
+                                {% if mood == "Happy" %}{% set emoji = "😊" %}
+                                {% elif mood == "Calm" %}{% set emoji = "😌" %}
+                                {% elif mood == "Sad" %}{% set emoji = "😢" %}
+                                {% elif mood == "Stressed" %}{% set emoji = "😫" %}
+                                {% elif mood == "Anxious" %}{% set emoji = "😰" %}
+                                {% elif mood == "Angry" %}{% set emoji = "😡" %}
+                                {% elif mood == "Lonely" %}{% set emoji = "😔" %}{% endif %}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+                                    <span class="mr-1">{{ emoji }}</span> {{ mood }}
+                                </span>
+                            </div>
+                            {% endif %}
                         </div>
-                        <p class="text-xs text-slate-550 mt-1 line-clamp-2">
-                            Reflected on work hours and how taking short walks outside is helping my overall stress levels...
-                        </p>
-                    </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="py-8 text-center text-slate-400">
+                            <i data-lucide="book-open" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
+                            <p class="text-xs">No reflections saved yet.</p>
+                            <a href="{{ url_for('journal.index') }}" class="text-xs font-semibold text-primary hover:underline mt-1 inline-block">Write your first reflection &rarr;</a>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
