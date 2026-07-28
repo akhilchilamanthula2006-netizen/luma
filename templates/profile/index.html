@@ -4,31 +4,98 @@
 {% block page_title %}My Profile{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto px-4 py-8">
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold tracking-tight text-secondary">My Profile</h1>
-        <p class="text-slate-500 mt-1">Manage your account information and preferences.</p>
+<div class="max-w-5xl mx-auto space-y-8 pb-12">
+    <!-- Header -->
+    <div class="flex justify-between items-end">
+        <div>
+            <h1 class="text-3xl font-bold tracking-tight text-secondary">My Profile</h1>
+            <p class="text-slate-500 mt-1">Manage your public information and view your summary.</p>
+        </div>
     </div>
 
-    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-6">
-        <div class="flex items-center space-x-4">
-            <div class="w-16 h-16 rounded-full bg-blue-100 text-primary flex items-center justify-center text-2xl font-bold">
-                {{ username[0].upper() if username else 'U' }}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left Column: User Card & Stats -->
+        <div class="lg:col-span-1 space-y-8">
+            <!-- User Card -->
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 text-center">
+                <div class="w-24 h-24 mx-auto rounded-full bg-primary/10 text-primary flex items-center justify-center text-4xl font-bold mb-4 overflow-hidden border-4 border-white shadow-sm">
+                    {% if user.avatar %}
+                        <img src="{{ user.avatar }}" alt="Avatar" class="w-full h-full object-cover">
+                    {% else %}
+                        {{ user.username[0].upper() if user.username else 'U' }}
+                    {% endif %}
+                </div>
+                <h3 class="text-xl font-bold text-secondary">{{ user.username }}</h3>
+                <p class="text-sm text-slate-500 mb-4">{{ user.email }}</p>
+                <div class="inline-flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-600 rounded-full text-xs font-medium">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Member since {{ user.created_at.strftime('%B %Y') if user.created_at else 'Unknown' }}
+                </div>
             </div>
-            <div>
-                <h3 class="text-xl font-bold text-secondary">{{ username or 'User' }}</h3>
-                <span class="text-sm text-slate-400">Registered member</span>
+
+            <!-- Wellness Summary -->
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                <h4 class="font-bold text-secondary mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    Wellness Summary
+                </h4>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
+                        <span class="text-sm font-medium text-slate-600">Wellness Score</span>
+                        <span class="font-bold text-primary">{{ stats.get('wellness_score', 0) if stats.get('wellness_score') else '--' }}</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
+                        <span class="text-sm font-medium text-slate-600">Current Streak</span>
+                        <span class="font-bold text-orange-500">{{ stats.get('streak_count', 0) }} days</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
+                        <span class="text-sm font-medium text-slate-600">Journal Entries</span>
+                        <span class="font-bold text-blue-500">{{ total_journals }}</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
+                        <span class="text-sm font-medium text-slate-600">Wellness Sessions</span>
+                        <span class="font-bold text-emerald-500">{{ total_sessions }}</span>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="border-t border-slate-100 pt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Username</label>
-                <div class="text-sm font-medium text-secondary">{{ username or 'User' }}</div>
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Email</label>
-                <div class="text-sm font-medium text-secondary">user@example.com</div>
+        <!-- Right Column: Edit Profile Form -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                <div class="p-6 border-b border-slate-100 bg-slate-50/50">
+                    <h3 class="text-lg font-bold text-secondary">Edit Information</h3>
+                </div>
+                
+                <form action="{{ url_for('profile.update_profile') }}" method="POST" class="p-6 space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-slate-700">Display Name</label>
+                            <input type="text" name="name" value="{{ user.username }}" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all" placeholder="Your name">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-slate-700">Email Address</label>
+                            <input type="email" value="{{ user.email }}" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed" disabled>
+                            <p class="text-xs text-slate-500">Email cannot be changed.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <label class="text-sm font-medium text-slate-700">Avatar URL</label>
+                        <input type="url" name="avatar" value="{{ user.avatar }}" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all" placeholder="https://example.com/avatar.jpg">
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-sm font-medium text-slate-700">Bio</label>
+                        <textarea name="bio" rows="4" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none" placeholder="Write a short bio about yourself...">{{ user.bio }}</textarea>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-100 flex justify-end">
+                        <button type="submit" class="px-6 py-2.5 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-colors shadow-sm shadow-primary/20">
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
