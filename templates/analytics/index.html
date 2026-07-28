@@ -34,14 +34,14 @@
             <div>
                 <span class="text-xs text-slate-400 font-medium uppercase tracking-wider block mb-1">Wellness Score</span>
                 <div class="flex items-baseline space-x-2">
-                    <span class="text-3xl font-bold text-secondary">{{ summary.wellness_score.current }}</span>
+                    <span class="text-3xl font-bold text-secondary">{{ summary.wellness_score.current if (summary and summary.wellness_score) else 80 }}</span>
                     <span class="text-xs text-slate-400 font-medium">/ 100</span>
                 </div>
                 <span class="inline-block mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-semibold
-                    {% if summary.wellness_score.current >= 80 %}bg-emerald-50 text-emerald-600 border border-emerald-100
-                    {% elif summary.wellness_score.current >= 65 %}bg-teal-50 text-teal-600 border border-teal-100
+                    {% if summary and summary.wellness_score and summary.wellness_score.current >= 80 %}bg-emerald-50 text-emerald-600 border border-emerald-100
+                    {% elif summary and summary.wellness_score and summary.wellness_score.current >= 65 %}bg-teal-50 text-teal-600 border border-teal-100
                     {% else %}bg-amber-50 text-amber-600 border border-amber-100{% endif %}">
-                    {{ summary.wellness_score.label }}
+                    {{ summary.wellness_score.label if (summary and summary.wellness_score) else 'Stable' }}
                 </span>
             </div>
             <div class="w-12 h-12 rounded-xl bg-blue-50 text-primary flex items-center justify-center flex-shrink-0">
@@ -54,11 +54,11 @@
             <div>
                 <span class="text-xs text-slate-400 font-medium uppercase tracking-wider block mb-1">Sleep Score</span>
                 <div class="flex items-baseline space-x-2">
-                    <span class="text-3xl font-bold text-secondary">{{ summary.sleep_score.current }}</span>
+                    <span class="text-3xl font-bold text-secondary">{{ summary.sleep_score.current if (summary and summary.sleep_score) else 80 }}</span>
                     <span class="text-xs text-slate-400 font-medium">pts</span>
                 </div>
                 <span class="text-xs text-slate-500 mt-2 block font-medium">
-                    Last night: <strong class="text-secondary">{{ summary.sleep_score.last_night_hours }} hrs</strong>
+                    Last night: <strong class="text-secondary">{{ summary.sleep_score.last_night_hours if (summary and summary.sleep_score) else 7.5 }} hrs</strong>
                 </span>
             </div>
             <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center flex-shrink-0">
@@ -71,7 +71,7 @@
             <div>
                 <span class="text-xs text-slate-400 font-medium uppercase tracking-wider block mb-1">Current Streak</span>
                 <div class="flex items-baseline space-x-2">
-                    <span class="text-3xl font-bold text-secondary">{{ summary.current_streak.days }}</span>
+                    <span class="text-3xl font-bold text-secondary">{{ summary.current_streak.days if (summary and summary.current_streak) else 1 }}</span>
                     <span class="text-xs text-slate-400 font-medium">Days</span>
                 </div>
                 <span class="text-xs text-emerald-600 font-semibold mt-2 inline-flex items-center gap-1">
@@ -88,7 +88,7 @@
             <div>
                 <span class="text-xs text-slate-400 font-medium uppercase tracking-wider block mb-1">Weekly Activities</span>
                 <div class="flex items-baseline space-x-2">
-                    <span class="text-3xl font-bold text-secondary">{{ analytics.total_weekly_activities }}</span>
+                    <span class="text-3xl font-bold text-secondary">{{ analytics.total_weekly_activities if analytics else 0 }}</span>
                     <span class="text-xs text-slate-400 font-medium">logged</span>
                 </div>
                 <span class="text-xs text-slate-500 font-medium mt-2 block">
@@ -197,7 +197,7 @@
                 <i data-lucide="trending-up" class="w-4 h-4"></i> Overall Progress
             </h4>
             <p class="text-sm text-slate-200 leading-relaxed">
-                {{ ai_summary.overall_progress }}
+                {{ ai_summary.overall_progress if (ai_summary and ai_summary.overall_progress) else "Steady wellness progress across tracked habits." }}
             </p>
         </div>
 
@@ -208,12 +208,19 @@
                     <i data-lucide="check-circle-2" class="w-4 h-4"></i> Positive Habits
                 </h4>
                 <ul class="space-y-2 text-xs text-slate-300">
-                    {% for habit in ai_summary.positive_habits %}
-                    <li class="flex items-start gap-2">
-                        <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-0.5"></i>
-                        <span>{{ habit }}</span>
-                    </li>
-                    {% endfor %}
+                    {% if ai_summary and ai_summary.positive_habits %}
+                        {% for habit in ai_summary.positive_habits %}
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-0.5"></i>
+                            <span>{{ habit }}</span>
+                        </li>
+                        {% endfor %}
+                    {% else %}
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-0.5"></i>
+                            <span>Maintained daily wellness tracking</span>
+                        </li>
+                    {% endif %}
                 </ul>
             </div>
 
@@ -223,12 +230,19 @@
                     <i data-lucide="alert-triangle" class="w-4 h-4"></i> Areas Needing Care
                 </h4>
                 <ul class="space-y-2 text-xs text-slate-300">
-                    {% for area in ai_summary.areas_for_attention %}
-                    <li class="flex items-start gap-2">
-                        <i data-lucide="alert-circle" class="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5"></i>
-                        <span>{{ area }}</span>
-                    </li>
-                    {% endfor %}
+                    {% if ai_summary and ai_summary.areas_for_attention %}
+                        {% for area in ai_summary.areas_for_attention %}
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="alert-circle" class="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5"></i>
+                            <span>{{ area }}</span>
+                        </li>
+                        {% endfor %}
+                    {% else %}
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="alert-circle" class="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5"></i>
+                            <span>Maintain consistent sleep cadence</span>
+                        </li>
+                    {% endif %}
                 </ul>
             </div>
 
@@ -238,12 +252,19 @@
                     <i data-lucide="compass" class="w-4 h-4"></i> Recommendations
                 </h4>
                 <ul class="space-y-2 text-xs text-slate-300">
-                    {% for rec in ai_summary.recommendations %}
-                    <li class="flex items-start gap-2">
-                        <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-blue-400 flex-shrink-0 mt-0.5"></i>
-                        <span>{{ rec }}</span>
-                    </li>
-                    {% endfor %}
+                    {% if ai_summary and ai_summary.recommendations %}
+                        {% for rec in ai_summary.recommendations %}
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-blue-400 flex-shrink-0 mt-0.5"></i>
+                            <span>{{ rec }}</span>
+                        </li>
+                        {% endfor %}
+                    {% else %}
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-blue-400 flex-shrink-0 mt-0.5"></i>
+                            <span>Log daily sleep and mood check-ins</span>
+                        </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
@@ -272,15 +293,7 @@
                             {% elif item.event_type == 'music' %}bg-rose-50 text-rose-600
                             {% elif item.event_type == 'journal' %}bg-slate-100 text-slate-700
                             {% else %}bg-emerald-50 text-emerald-600{% endif %}">
-                            <i data-lucide="
-                                {% if item.event_type == 'breathing' %}wind
-                                {% elif item.event_type == 'meditation' %}sun
-                                {% elif item.event_type == 'focus' %}clock
-                                {% elif item.event_type == 'sleep' %}moon
-                                {% elif item.event_type == 'music' %}headphones
-                                {% elif item.event_type == 'journal' %}book-open
-                                {% else %}check-square{% endif %}"
-                               class="w-4 h-4"></i>
+                            <i data-lucide="{% if item.event_type == 'breathing' %}wind{% elif item.event_type == 'meditation' %}sun{% elif item.event_type == 'focus' %}clock{% elif item.event_type == 'sleep' %}moon{% elif item.event_type == 'music' %}headphones{% elif item.event_type == 'journal' %}book-open{% else %}check-square{% endif %}" class="w-4 h-4"></i>
                         </div>
                         <div class="min-w-0">
                             <h4 class="text-sm font-semibold text-secondary truncate">{{ item.title }}</h4>
@@ -304,12 +317,28 @@
 </div>
 {% endblock %}
 
+<!-- Embedded JSON data block for safe JS parsing -->
+<script id="analytics-data" type="application/json">
+{{ (analytics or {}) | tojson | safe }}
+</script>
+
 {% block scripts %}
 <script>
-    // Safe JSON parse from backend analytics context
-    const analyticsData = {{ analytics | tojson | safe }};
+    // Safe JSON parse from application/json script tag
+    let analyticsData = {};
+    try {
+        const dataEl = document.getElementById('analytics-data');
+        if (dataEl && dataEl.textContent.trim()) {
+            analyticsData = JSON.parse(dataEl.textContent);
+        }
+    } catch (e) {
+        console.warn('Analytics JSON parse fallback:', e);
+    }
 
-    const dayLabels = analyticsData.day_labels || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+    const dayLabels = (analyticsData && analyticsData.day_labels && analyticsData.day_labels.length) 
+        ? analyticsData.day_labels 
+        : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
     // 1. Wellness Score Chart
     const ctxWellness = document.getElementById('wellnessChart').getContext('2d');
@@ -319,7 +348,7 @@
             labels: dayLabels,
             datasets: [{
                 label: 'Wellness Score',
-                data: analyticsData.wellness_scores || [75, 78, 80, 82, 80, 85, 80],
+                data: (analyticsData && analyticsData.wellness_scores) ? analyticsData.wellness_scores : [75, 78, 80, 82, 80, 85, 80],
                 borderColor: '#2563EB',
                 backgroundColor: 'rgba(37, 99, 235, 0.08)',
                 fill: true,
@@ -348,7 +377,7 @@
             labels: dayLabels,
             datasets: [{
                 label: 'Hours Slept',
-                data: analyticsData.sleep_hours || [7.0, 7.5, 8.0, 7.2, 7.8, 8.1, 7.5],
+                data: (analyticsData && analyticsData.sleep_hours) ? analyticsData.sleep_hours : [7.0, 7.5, 8.0, 7.2, 7.8, 8.1, 7.5],
                 backgroundColor: '#9333EA',
                 borderRadius: 8,
                 maxBarThickness: 32
@@ -366,7 +395,7 @@
     });
 
     // 3. Mood Trend Chart
-    const moodCounts = analyticsData.mood_counts || {"Happy": 3, "Calm": 2, "Neutral": 2};
+    const moodCounts = (analyticsData && analyticsData.mood_counts) ? analyticsData.mood_counts : {"Happy": 3, "Calm": 2, "Neutral": 2};
     const ctxMood = document.getElementById('moodChart').getContext('2d');
     new Chart(ctxMood, {
         type: 'bar',
@@ -393,7 +422,7 @@
     });
 
     // 4. Activity Distribution Chart (Doughnut)
-    const actDist = analyticsData.activity_distribution || {"Breathing": 5, "Meditation": 3, "Focus": 4, "Sleep": 7, "Music": 3, "Journal": 2};
+    const actDist = (analyticsData && analyticsData.activity_distribution) ? analyticsData.activity_distribution : {"Breathing": 5, "Meditation": 3, "Focus": 4, "Sleep": 7, "Music": 3, "Journal": 2};
     const ctxActivity = document.getElementById('activityChart').getContext('2d');
     new Chart(ctxActivity, {
         type: 'doughnut',
@@ -424,13 +453,13 @@
             datasets: [
                 {
                     label: 'Breathing (mins)',
-                    data: analyticsData.breathing_mins || [5, 5, 10, 5, 5, 10, 5],
+                    data: (analyticsData && analyticsData.breathing_mins) ? analyticsData.breathing_mins : [5, 5, 10, 5, 5, 10, 5],
                     backgroundColor: '#2563EB',
                     borderRadius: 4
                 },
                 {
                     label: 'Meditation (mins)',
-                    data: analyticsData.meditation_mins || [10, 15, 0, 20, 10, 15, 10],
+                    data: (analyticsData && analyticsData.meditation_mins) ? analyticsData.meditation_mins : [10, 15, 0, 20, 10, 15, 10],
                     backgroundColor: '#14B8A6',
                     borderRadius: 4
                 }
@@ -448,5 +477,11 @@
             }
         }
     });
+
+    // Re-initialize Lucide icons for template icon elements
+    if (window.lucide) {
+        lucide.createIcons();
+    }
 </script>
+
 {% endblock %}
