@@ -1,0 +1,120 @@
+{% extends "app_shell.html" %}
+
+{% block title %}Meditation Practice — Luma Wellness{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8 pb-12">
+    
+    <div class="flex items-center gap-3">
+        <a href="{{ url_for('wellness.index') }}" class="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition">
+            <i data-lucide="arrow-left" class="w-5 h-5"></i>
+        </a>
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900">Mindful Meditation</h1>
+            <p class="text-sm text-slate-500">Unplug, focus on your breath, and build daily mindfulness.</p>
+        </div>
+    </div>
+
+    <!-- Meditation Card -->
+    <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm text-center space-y-8">
+        
+        <!-- Duration Selector -->
+        <div class="inline-flex p-1 bg-slate-100 rounded-xl">
+            <button onclick="setDuration(5)" id="dur-5" class="px-4 py-2 text-xs font-semibold rounded-lg bg-white shadow-sm text-slate-900 transition">5 Min</button>
+            <button onclick="setDuration(10)" id="dur-10" class="px-4 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition">10 Min</button>
+            <button onclick="setDuration(15)" id="dur-15" class="px-4 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition">15 Min</button>
+            <button onclick="setDuration(20)" id="dur-20" class="px-4 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition">20 Min</button>
+        </div>
+
+        <!-- Timer Display -->
+        <div class="w-56 h-56 mx-auto rounded-full border-4 border-teal-500/30 flex items-center justify-center bg-teal-500/5">
+            <div class="space-y-2">
+                <span id="med-timer-display" class="text-5xl font-extrabold text-slate-900">05:00</span>
+                <p id="med-status" class="text-xs text-slate-500 font-medium">Ready to begin</p>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="flex items-center justify-center gap-4">
+            <button id="btn-med-start" onclick="toggleMeditation()" class="px-8 py-3 bg-teal-600 text-white font-semibold text-sm rounded-xl shadow hover:bg-teal-700 transition">
+                Begin Practice
+            </button>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    let durationMins = 5;
+    let secondsLeft = 300;
+    let isMeditating = false;
+    let medTimerId = null;
+
+    function setDuration(mins) {
+        if (isMeditating) toggleMeditation();
+        durationMins = mins;
+        secondsLeft = mins * 60;
+        
+        document.querySelectorAll('[id^="dur-"]').forEach(btn => {
+            btn.className = "px-4 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition";
+        });
+        document.getElementById(`dur-${mins}`).className = "px-4 py-2 text-xs font-semibold rounded-lg bg-white shadow-sm text-slate-900 transition";
+        updateDisplay();
+    }
+
+    function updateDisplay() {
+        const m = Math.floor(secondsLeft / 60).toString().padStart(2, '0');
+        const s = (secondsLeft % 60).toString().padStart(2, '0');
+        document.getElementById('med-timer-display').textContent = `${m}:${s}`;
+    }
+
+    function toggleMeditation() {
+        const btn = document.getElementById('btn-med-start');
+        if (isMeditating) {
+            isMeditating = false;
+            clearInterval(medTimerId);
+            btn.textContent = 'Resume Practice';
+            btn.className = 'px-8 py-3 bg-teal-600 text-white font-semibold text-sm rounded-xl shadow hover:bg-teal-700 transition';
+            document.getElementById('med-status').textContent = 'Paused';
+        } else {
+            isMeditating = true;
+            btn.textContent = 'Pause Practice';
+            btn.className = 'px-8 py-3 bg-slate-700 text-white font-semibold text-sm rounded-xl shadow hover:bg-slate-800 transition';
+            document.getElementById('med-status').textContent = 'Mindful Breathing...';
+
+            medTimerId = setInterval(() => {
+                secondsLeft--;
+                updateDisplay();
+                if (secondsLeft <= 0) {
+                    clearInterval(medTimerId);
+                    finishMeditation();
+                }
+            }, 1000);
+        }
+    }
+
+    async function finishMeditation() {
+        isMeditating = false;
+        document.getElementById('btn-med-start').textContent = 'Completed!';
+        document.getElementById('med-status').textContent = 'Session Complete!';
+
+        await fetch('/wellness/api/meditation/session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                duration_minutes: durationMins,
+                elapsed_seconds: durationMins * 60,
+                completed: true,
+                guided: false
+            })
+        });
+
+        await fetch('/wellness/api/activities/log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ activity_type: 'meditation', value: 1 })
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,406 @@
+{% extends "app_shell.html" %}
+
+{% block title %}Music Therapy — Luma Wellness{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-8 pb-12">
+
+    <div class="flex items-center gap-3">
+        <a href="{{ url_for('wellness.index') }}" class="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition">
+            <i data-lucide="arrow-left" class="w-5 h-5"></i>
+        </a>
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900">Music Therapy</h1>
+            <p class="text-sm text-slate-500">Curated audio soundscapes generated in real-time — stress relief, deep focus, and relaxation.</p>
+        </div>
+    </div>
+
+    <!-- Now Playing Bar -->
+    <div id="now-playing-bar" class="hidden bg-slate-900 text-white rounded-2xl px-6 py-4 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-4 min-w-0">
+            <div id="np-pulse" class="w-9 h-9 rounded-full bg-rose-500 flex items-center justify-center flex-shrink-0 animate-pulse">
+                <i data-lucide="music" class="w-4 h-4 text-white"></i>
+            </div>
+            <div class="min-w-0">
+                <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Now Playing</p>
+                <p id="np-title" class="text-sm font-bold truncate"></p>
+            </div>
+        </div>
+        <div class="flex items-center gap-3 flex-shrink-0">
+            <span id="np-timer" class="text-xs text-slate-400 font-mono">0:00</span>
+            <button onclick="stopAll()" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-xl transition flex items-center gap-1.5">
+                <i data-lucide="square" class="w-3.5 h-3.5"></i> Stop
+            </button>
+        </div>
+    </div>
+
+    <!-- Category Filter Tabs -->
+    <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+        <button onclick="filterCategory('all')" id="cat-all"
+            class="px-4 py-2 text-xs font-semibold rounded-xl bg-slate-900 text-white transition whitespace-nowrap">
+            All Soundscapes
+        </button>
+        <button onclick="filterCategory('stress_relief')" id="cat-stress_relief"
+            class="px-4 py-2 text-xs font-semibold rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition whitespace-nowrap">
+            Stress Relief
+        </button>
+        <button onclick="filterCategory('calm')" id="cat-calm"
+            class="px-4 py-2 text-xs font-semibold rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition whitespace-nowrap">
+            Calm
+        </button>
+        <button onclick="filterCategory('focus')" id="cat-focus"
+            class="px-4 py-2 text-xs font-semibold rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition whitespace-nowrap">
+            Focus
+        </button>
+        <button onclick="filterCategory('nature')" id="cat-nature"
+            class="px-4 py-2 text-xs font-semibold rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition whitespace-nowrap">
+            Nature
+        </button>
+        <button onclick="filterCategory('morning_energy')" id="cat-morning_energy"
+            class="px-4 py-2 text-xs font-semibold rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition whitespace-nowrap">
+            Morning Energy
+        </button>
+    </div>
+
+    <!-- Tracks Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="tracks-grid">
+        <div class="col-span-full flex items-center justify-center py-16 text-slate-400">
+            <div class="text-center space-y-2">
+                <i data-lucide="loader" class="w-8 h-8 mx-auto animate-spin text-slate-300"></i>
+                <p class="text-sm">Loading soundscapes…</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// ── Web Audio API Soundscape Engine ─────────────────────────────────────────
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+
+// Active nodes per track
+const activeSounds = {};   // trackId → { nodes: [...], gainNode, startTime }
+let activeTrackId  = null;
+let timerInterval  = null;
+
+function ensureCtx() {
+    if (!audioCtx) audioCtx = new AudioCtx();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+// ── Noise buffer (shared) ────────────────────────────────────────────────────
+let _noiseBuffer = null;
+function getNoiseBuffer() {
+    if (_noiseBuffer) return _noiseBuffer;
+    const sr     = audioCtx.sampleRate;
+    const frames = sr * 4;           // 4-second loopable block
+    const buf    = audioCtx.createBuffer(2, frames, sr);
+    for (let ch = 0; ch < 2; ch++) {
+        const data = buf.getChannelData(ch);
+        let last = 0;
+        for (let i = 0; i < frames; i++) {
+            // White noise
+            const white = Math.random() * 2 - 1;
+            // Brown noise (low-pass the white)
+            last = (last + 0.02 * white) / 1.02;
+            data[i] = last * 20;   // compensate level
+        }
+    }
+    _noiseBuffer = buf;
+    return buf;
+}
+
+// ── Generators ───────────────────────────────────────────────────────────────
+const GENERATORS = {
+
+    // 1. Ocean — pink-ish noise + slow 0.12 Hz LFO tremolo
+    ocean(masterGain) {
+        const src = audioCtx.createBufferSource();
+        src.buffer = getNoiseBuffer();
+        src.loop   = true;
+
+        const lp = audioCtx.createBiquadFilter();
+        lp.type = 'lowpass'; lp.frequency.value = 600;
+
+        // LFO for wave rhythm
+        const lfo = audioCtx.createOscillator();
+        lfo.frequency.value = 0.12;
+        const lfoGain = audioCtx.createGain();
+        lfoGain.gain.value = 0.4;
+        lfo.connect(lfoGain);
+        lfoGain.connect(masterGain.gain);
+
+        src.connect(lp); lp.connect(masterGain);
+        src.start(); lfo.start();
+        return [src, lp, lfo, lfoGain];
+    },
+
+    // 2. Rain — brown noise, high-pass to remove rumble, slight stereo spread
+    rain(masterGain) {
+        const nodes = [];
+        for (let ch = 0; ch < 2; ch++) {
+            const src = audioCtx.createBufferSource();
+            src.buffer = getNoiseBuffer();
+            src.loop   = true;
+
+            const hp = audioCtx.createBiquadFilter();
+            hp.type = 'highpass'; hp.frequency.value = 400;
+            const lp = audioCtx.createBiquadFilter();
+            lp.type = 'lowpass';  lp.frequency.value = 3000;
+
+            const pan = audioCtx.createStereoPanner();
+            pan.pan.value = ch === 0 ? -0.3 : 0.3;
+
+            src.connect(hp); hp.connect(lp); lp.connect(pan); pan.connect(masterGain);
+            src.start();
+            nodes.push(src, hp, lp, pan);
+        }
+        return nodes;
+    },
+
+    // 3. Binaural — 200 Hz left, 210 Hz right (10 Hz alpha beat) + soft noise bed
+    binaural(masterGain) {
+        const merger = audioCtx.createChannelMerger(2);
+        merger.connect(masterGain);
+
+        const left  = audioCtx.createOscillator();
+        left.frequency.value  = 200;
+        left.type = 'sine';
+        const right = audioCtx.createOscillator();
+        right.frequency.value = 210;
+        right.type = 'sine';
+
+        // Pan each osc to its own channel
+        const lPan = audioCtx.createStereoPanner(); lPan.pan.value = -1;
+        const rPan = audioCtx.createStereoPanner(); rPan.pan.value =  1;
+        const oscGain = audioCtx.createGain(); oscGain.gain.value = 0.18;
+
+        left.connect(oscGain);  oscGain.connect(lPan); lPan.connect(masterGain);
+        right.connect(oscGain); oscGain.connect(rPan); rPan.connect(masterGain);
+
+        // Background noise bed
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = getNoiseBuffer(); noise.loop = true;
+        const noiseHp = audioCtx.createBiquadFilter();
+        noiseHp.type = 'highpass'; noiseHp.frequency.value = 1000;
+        const noiseGain = audioCtx.createGain(); noiseGain.gain.value = 0.04;
+        noise.connect(noiseHp); noiseHp.connect(noiseGain); noiseGain.connect(masterGain);
+
+        left.start(); right.start(); noise.start();
+        return [left, right, oscGain, lPan, rPan, noise, noiseHp, noiseGain, merger];
+    },
+
+    // 4. Forest — band-pass filtered noise + gentle LFO "wind" sweep
+    forest(masterGain) {
+        const src = audioCtx.createBufferSource();
+        src.buffer = getNoiseBuffer(); src.loop = true;
+
+        const bp = audioCtx.createBiquadFilter();
+        bp.type = 'bandpass'; bp.frequency.value = 900; bp.Q.value = 0.6;
+
+        const lfo = audioCtx.createOscillator();
+        lfo.frequency.value = 0.05;
+        const lfoGain = audioCtx.createGain();
+        lfoGain.gain.value = 300;
+        lfo.connect(lfoGain); lfoGain.connect(bp.frequency);
+
+        src.connect(bp); bp.connect(masterGain);
+        src.start(); lfo.start();
+        return [src, bp, lfo, lfoGain];
+    },
+
+    // 5. Morning — warm ascending oscillator chords + soft noise shimmer
+    morning(masterGain) {
+        const nodes = [];
+        const freqs = [220, 277.18, 329.63, 440]; // A3 C#4 E4 A4 — A major
+        freqs.forEach((freq, i) => {
+            const osc = audioCtx.createOscillator();
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            const g = audioCtx.createGain();
+            g.gain.setValueAtTime(0, audioCtx.currentTime);
+            // Stagger fade-ins for a sunrise feel
+            g.gain.linearRampToValueAtTime(0.06, audioCtx.currentTime + 2 + i * 1.5);
+            osc.connect(g); g.connect(masterGain);
+            osc.start(); nodes.push(osc, g);
+        });
+
+        // Shimmer noise
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = getNoiseBuffer(); noise.loop = true;
+        const hp = audioCtx.createBiquadFilter();
+        hp.type = 'highpass'; hp.frequency.value = 4000;
+        const ng = audioCtx.createGain(); ng.gain.value = 0.03;
+        noise.connect(hp); hp.connect(ng); ng.connect(masterGain);
+        noise.start();
+        nodes.push(noise, hp, ng);
+        return nodes;
+    }
+};
+
+const GENERATOR_MAP = {
+    ocean: 'ocean', rain: 'rain', binaural: 'binaural', forest: 'forest', morning: 'morning'
+};
+
+// ── Track Controls ───────────────────────────────────────────────────────────
+function playTrack(trackId, webapiType, title) {
+    ensureCtx();
+    stopAll(false);  // stop without resetting UI first
+
+    const masterGain = audioCtx.createGain();
+    masterGain.gain.value = 0;
+    masterGain.connect(audioCtx.destination);
+    // Fade in
+    masterGain.gain.linearRampToValueAtTime(0.6, audioCtx.currentTime + 1.5);
+
+    const genKey  = GENERATOR_MAP[webapiType] || 'ocean';
+    const nodes   = GENERATORS[genKey](masterGain);
+
+    activeSounds[trackId] = { nodes, masterGain, startTime: Date.now() };
+    activeTrackId = trackId;
+
+    // Update Now Playing bar
+    document.getElementById('np-title').textContent = title;
+    document.getElementById('now-playing-bar').classList.remove('hidden');
+
+    // Start timer
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - activeSounds[trackId]?.startTime) / 1000);
+        const m = Math.floor(elapsed / 60);
+        const s = elapsed % 60;
+        document.getElementById('np-timer').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+    }, 1000);
+
+    renderGrid();
+
+    // Log to backend (non-blocking)
+    fetch('/wellness/api/music/history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ track_id: trackId, category: webapiType, listened_duration_seconds: 0, completion_percentage: 0 })
+    }).catch(() => {});
+    fetch('/wellness/api/activities/log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ activity_type: 'music', value: 1 })
+    }).catch(() => {});
+}
+
+function stopAll(rerender = true) {
+    if (activeTrackId && activeSounds[activeTrackId]) {
+        const { nodes, masterGain } = activeSounds[activeTrackId];
+        // Fade out
+        masterGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.3);
+        setTimeout(() => {
+            nodes.forEach(n => { try { n.stop?.(); n.disconnect?.(); } catch(_){} });
+            masterGain.disconnect();
+        }, 800);
+        delete activeSounds[activeTrackId];
+    }
+    activeTrackId = null;
+    clearInterval(timerInterval);
+    document.getElementById('now-playing-bar').classList.add('hidden');
+    document.getElementById('np-timer').textContent = '0:00';
+    if (rerender) renderGrid();
+}
+
+// ── Track Loading & Rendering ────────────────────────────────────────────────
+let allTracks     = [];
+let currentCat    = 'all';
+
+const CATEGORY_COLOURS = {
+    stress_relief: 'bg-rose-50 text-rose-600',
+    calm:          'bg-sky-50 text-sky-600',
+    focus:         'bg-indigo-50 text-indigo-600',
+    nature:        'bg-emerald-50 text-emerald-600',
+    morning_energy:'bg-amber-50 text-amber-600',
+};
+
+const CATEGORY_LABELS = {
+    stress_relief:  'Stress Relief',
+    calm:           'Calm',
+    focus:          'Focus',
+    nature:         'Nature',
+    morning_energy: 'Morning Energy',
+};
+
+const PLAY_BTN_COLOURS = {
+    stress_relief:  'bg-rose-600 hover:bg-rose-700',
+    calm:           'bg-sky-600 hover:bg-sky-700',
+    focus:          'bg-indigo-600 hover:bg-indigo-700',
+    nature:         'bg-emerald-600 hover:bg-emerald-700',
+    morning_energy: 'bg-amber-500 hover:bg-amber-600',
+};
+
+async function fetchTracks() {
+    const url = currentCat === 'all'
+        ? '/wellness/api/music/tracks'
+        : `/wellness/api/music/tracks?category=${currentCat}`;
+    try {
+        const res  = await fetch(url);
+        const data = await res.json();
+        allTracks = (data.success && data.data.tracks) ? data.data.tracks : [];
+    } catch(e) {
+        allTracks = [];
+    }
+    renderGrid();
+}
+
+function renderGrid() {
+    const grid = document.getElementById('tracks-grid');
+    if (!allTracks.length) {
+        grid.innerHTML = `<div class="col-span-full py-16 text-center text-slate-400 text-sm">No soundscapes found for this category.</div>`;
+        return;
+    }
+
+    grid.innerHTML = allTracks.map(track => {
+        const isPlaying  = activeTrackId === track.track_id;
+        const catColour  = CATEGORY_COLOURS[track.category]  || 'bg-slate-100 text-slate-600';
+        const btnColour  = PLAY_BTN_COLOURS[track.category]  || 'bg-slate-800 hover:bg-slate-900';
+        const catLabel   = CATEGORY_LABELS[track.category]   || track.category;
+        const durMin     = Math.floor(track.duration_seconds / 60);
+        const webapiType = track.audio_source?.webapi_type || 'ocean';
+        const safeTitle  = track.title.replace(/'/g, "\\'");
+
+        return `
+        <div class="bg-white rounded-2xl border ${isPlaying ? 'border-slate-900 shadow-lg ring-1 ring-slate-900/10' : 'border-slate-200 shadow-sm'} p-6 space-y-4 flex flex-col justify-between transition-all duration-200">
+            <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider ${catColour}">${catLabel}</span>
+                    <span class="text-xs text-slate-400 font-medium">${durMin} min</span>
+                </div>
+                <h3 class="text-base font-semibold text-slate-900 leading-snug">${track.title}</h3>
+                <p class="text-xs text-slate-500 leading-relaxed">${track.description}</p>
+            </div>
+            <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
+                <span class="text-xs text-slate-400">${track.artist}</span>
+                <button
+                    onclick="${isPlaying ? 'stopAll()' : `playTrack('${track.track_id}', '${webapiType}', '${safeTitle}')`}"
+                    class="px-4 py-2 text-white font-semibold text-xs rounded-xl shadow transition flex items-center gap-1.5 ${isPlaying ? 'bg-slate-800 hover:bg-slate-900' : btnColour}">
+                    <i data-lucide="${isPlaying ? 'square' : 'play'}" class="w-3.5 h-3.5"></i>
+                    ${isPlaying ? 'Stop' : 'Play Sound'}
+                </button>
+            </div>
+        </div>`;
+    }).join('');
+
+    // Re-init Lucide icons for the newly rendered cards
+    if (window.lucide) lucide.createIcons();
+}
+
+function filterCategory(cat) {
+    currentCat = cat;
+    document.querySelectorAll('[id^="cat-"]').forEach(btn => {
+        btn.className = 'px-4 py-2 text-xs font-semibold rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition whitespace-nowrap';
+    });
+    document.getElementById(`cat-${cat}`).className =
+        'px-4 py-2 text-xs font-semibold rounded-xl bg-slate-900 text-white transition whitespace-nowrap';
+    fetchTracks();
+}
+
+// Initial load
+fetchTracks();
+</script>
+{% endblock %}

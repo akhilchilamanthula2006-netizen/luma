@@ -61,6 +61,7 @@ needed), and grounded in what the user actually said — avoid generic platitude
 
 The user's name is {username}.
 Their most recently recorded mood is: {mood}.
+Unified Wellness Signals: {wellness_signals}
 
 ──────────────────────────────────────────────────────────
 IMPORTANT — OUTPUT FORMAT
@@ -87,6 +88,7 @@ Use risk_level "high" ONLY when the user expresses thoughts of self-harm, \
 suicide, or severe crisis. In that case still provide a warm, supportive reply \
 field — do NOT refuse to engage.
 """
+
 
 
 class IntelligenceService:
@@ -123,37 +125,26 @@ class IntelligenceService:
         mood_label: str | None,
         history: list,
         user_message: str,
+        user_id: str | None = None,
     ) -> tuple:
-        """
-        Process a user message and return a reply + structured emotion data.
+        wellness_str = "No recent signals"
+        if user_id:
+            try:
+                from services.wellness.insights_service import InsightsService
+                ctx = InsightsService.get_unified_wellness_context(user_id)
+                score = ctx.get("score", {}).get("current", 80)
+                sleep_hrs = ctx.get("summary", {}).get("sleep_hours", 7.5)
+                heuristics = ", ".join(ctx.get("heuristics", [])) or "Balanced"
+                wellness_str = f"Wellness Score: {score}/100, Sleep: {sleep_hrs} hrs, Heuristics: [{heuristics}]"
+            except Exception as exc:
+                logger.warning("Could not fetch wellness signals for user %s: %s", user_id, exc)
 
-        Makes a single Groq API call using JSON mode so the model is
-        constrained to output a valid JSON object matching the required schema.
-        Validates every field; substitutes safe defaults for anything missing
-        or invalid so the app never crashes on a malformed response.
-
-        Parameters
-        ----------
-        username : str
-            The logged-in user's display name.
-        mood_label : str | None
-            Latest mood string from mood_logs, or None.
-        history : list
-            Chronological list of dicts with 'role' and 'content' keys.
-        user_message : str
-            The new message typed by the user.
-
-        Returns
-        -------
-        (reply: str, emotion: dict, error: str | None)
-            reply  — the assistant's conversational text (empty on hard failure)
-            emotion — validated emotion dict (always populated, never None)
-            error  — user-friendly error string, or None on success
-        """
         system_prompt = _SYSTEM_PROMPT_TEMPLATE.format(
             username=username or "there",
             mood=mood_label or "not recorded yet",
+            wellness_signals=wellness_str
         )
+
 
         trimmed_history = (
             history[-MAX_CONTEXT_MESSAGES:]

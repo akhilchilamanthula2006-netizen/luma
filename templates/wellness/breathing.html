@@ -1,0 +1,162 @@
+{% extends "app_shell.html" %}
+
+{% block title %}Guided Breathing — Luma Wellness{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8 pb-12">
+    
+    <div class="flex items-center gap-3">
+        <a href="{{ url_for('wellness.index') }}" class="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition">
+            <i data-lucide="arrow-left" class="w-5 h-5"></i>
+        </a>
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900">Guided Breathing</h1>
+            <p class="text-sm text-slate-500">Regulate your nervous system with clinical breathing exercises.</p>
+        </div>
+    </div>
+
+    <!-- Breathing Interactive Card -->
+    <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm text-center space-y-8">
+        
+        <!-- Pattern Tabs -->
+        <div class="inline-flex p-1 bg-slate-100 rounded-xl max-w-full overflow-x-auto">
+            <button onclick="selectPattern('box')" id="btn-pattern-box" class="px-4 py-2 text-xs font-semibold rounded-lg bg-white shadow-sm text-slate-900 transition">Box (4-4-4-4)</button>
+            <button onclick="selectPattern('4-7-8')" id="btn-pattern-4-7-8" class="px-4 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition">4-7-8 Relaxing</button>
+            <button onclick="selectPattern('calm')" id="btn-pattern-calm" class="px-4 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition">Calm (4-2-4-0)</button>
+            <button onclick="selectPattern('deep_relaxation')" id="btn-pattern-deep_relaxation" class="px-4 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition">Deep Exhale (4-0-8-0)</button>
+        </div>
+
+        <!-- Breathing Visual Ring -->
+        <div class="relative w-64 h-64 mx-auto flex items-center justify-center">
+            <div id="breath-circle" class="w-48 h-48 rounded-full bg-blue-500/10 border-4 border-blue-500/30 flex items-center justify-center transition-all duration-1000 transform">
+                <div class="text-center space-y-1">
+                    <p id="breath-phase" class="text-lg font-bold text-slate-900">Ready</p>
+                    <p id="breath-timer" class="text-3xl font-extrabold text-blue-600">4</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls & Status -->
+        <div class="space-y-4">
+            <p id="cycle-counter" class="text-xs font-medium text-slate-500">Completed 0 / 10 cycles</p>
+            <div class="flex items-center justify-center gap-4">
+                <button id="btn-start" onclick="toggleBreathing()" class="px-8 py-3 bg-blue-600 text-white font-semibold text-sm rounded-xl shadow hover:bg-blue-700 transition">
+                    Start Exercise
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    let activePattern = 'box';
+    let isRunning = false;
+    let currentCycle = 0;
+    let targetCycles = 10;
+    let patternConfig = { inhale_sec: 4, hold_in_sec: 4, exhale_sec: 4, hold_out_sec: 4 };
+    let intervalId = null;
+
+    const patterns = {
+        'box': { inhale_sec: 4, hold_in_sec: 4, exhale_sec: 4, hold_out_sec: 4, default_cycles: 10 },
+        '4-7-8': { inhale_sec: 4, hold_in_sec: 7, exhale_sec: 8, hold_out_sec: 0, default_cycles: 8 },
+        'calm': { inhale_sec: 4, hold_in_sec: 2, exhale_sec: 4, hold_out_sec: 0, default_cycles: 12 },
+        'deep_relaxation': { inhale_sec: 4, hold_in_sec: 0, exhale_sec: 8, hold_out_sec: 0, default_cycles: 10 }
+    };
+
+    function selectPattern(type) {
+        if (isRunning) toggleBreathing();
+        activePattern = type;
+        patternConfig = patterns[type];
+        targetCycles = patternConfig.default_cycles;
+        currentCycle = 0;
+        
+        document.querySelectorAll('[id^="btn-pattern-"]').forEach(btn => {
+            btn.className = "px-4 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition";
+        });
+        document.getElementById(`btn-pattern-${type}`).className = "px-4 py-2 text-xs font-semibold rounded-lg bg-white shadow-sm text-slate-900 transition";
+        
+        document.getElementById('cycle-counter').textContent = `Completed 0 / ${targetCycles} cycles`;
+        document.getElementById('breath-phase').textContent = 'Ready';
+        document.getElementById('breath-timer').textContent = patternConfig.inhale_sec;
+    }
+
+    function toggleBreathing() {
+        const btn = document.getElementById('btn-start');
+        if (isRunning) {
+            isRunning = false;
+            clearInterval(intervalId);
+            btn.textContent = 'Start Exercise';
+            btn.className = 'px-8 py-3 bg-blue-600 text-white font-semibold text-sm rounded-xl shadow hover:bg-blue-700 transition';
+            document.getElementById('breath-phase').textContent = 'Paused';
+            document.getElementById('breath-circle').className = "w-48 h-48 rounded-full bg-blue-500/10 border-4 border-blue-500/30 flex items-center justify-center transition-all duration-1000 transform";
+        } else {
+            isRunning = true;
+            btn.textContent = 'Pause Exercise';
+            btn.className = 'px-8 py-3 bg-slate-700 text-white font-semibold text-sm rounded-xl shadow hover:bg-slate-800 transition';
+            runCycle();
+        }
+    }
+
+    async function runCycle() {
+        if (!isRunning) return;
+
+        const phases = [
+            { name: 'Inhale', sec: patternConfig.inhale_sec, scale: 'w-60 h-60 bg-blue-500/20 border-blue-600' },
+            { name: 'Hold', sec: patternConfig.hold_in_sec, scale: 'w-60 h-60 bg-teal-500/20 border-teal-600' },
+            { name: 'Exhale', sec: patternConfig.exhale_sec, scale: 'w-40 h-40 bg-indigo-500/10 border-indigo-400' },
+            { name: 'Hold', sec: patternConfig.hold_out_sec, scale: 'w-40 h-40 bg-slate-500/10 border-slate-400' }
+        ];
+
+        for (let p of phases) {
+            if (p.sec <= 0 || !isRunning) continue;
+            document.getElementById('breath-phase').textContent = p.name;
+            document.getElementById('breath-circle').className = `${p.scale} rounded-full border-4 flex items-center justify-center transition-all duration-1000 transform`;
+
+            for (let t = p.sec; t > 0; t--) {
+                if (!isRunning) return;
+                document.getElementById('breath-timer').textContent = t;
+                await new Promise(r => setTimeout(r, 1000));
+            }
+        }
+
+        if (isRunning) {
+            currentCycle++;
+            document.getElementById('cycle-counter').textContent = `Completed ${currentCycle} / ${targetCycles} cycles`;
+            if (currentCycle >= targetCycles) {
+                finishSession();
+            } else {
+                runCycle();
+            }
+        }
+    }
+
+    async function finishSession() {
+        toggleBreathing();
+        document.getElementById('breath-phase').textContent = 'Completed!';
+        
+        // Log to backend
+        const totalDuration = currentCycle * (patternConfig.inhale_sec + patternConfig.hold_in_sec + patternConfig.exhale_sec + patternConfig.hold_out_sec);
+        await fetch('/wellness/api/breathing/session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                pattern_type: activePattern,
+                config: patternConfig,
+                target_cycles: targetCycles,
+                completed_cycles: currentCycle,
+                duration_seconds: totalDuration,
+                completed: true
+            })
+        });
+
+        // Log activity habit check
+        await fetch('/wellness/api/activities/log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ activity_type: 'breathing', value: 1 })
+        });
+    }
+</script>
+{% endblock %}

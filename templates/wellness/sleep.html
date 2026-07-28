@@ -1,0 +1,135 @@
+{% extends "app_shell.html" %}
+
+{% block title %}Sleep Tracking & Analytics — Luma Wellness{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8 pb-12">
+    
+    <div class="flex items-center gap-3">
+        <a href="{{ url_for('wellness.index') }}" class="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition">
+            <i data-lucide="arrow-left" class="w-5 h-5"></i>
+        </a>
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900">Sleep Tracking</h1>
+            <p class="text-sm text-slate-500">Log nightly rest, monitor awakenings, and calculate your Sleep Score.</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+        
+        <!-- Sleep Form Column -->
+        <div class="md:col-span-7 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+            <h3 class="text-base font-semibold text-slate-900 border-b border-slate-100 pb-3">Log Last Night's Sleep</h3>
+            
+            <form id="sleep-form" onsubmit="submitSleep(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Sleep Date</label>
+                    <input type="date" id="sleep_date" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Hours Slept</label>
+                        <input type="number" step="0.5" id="hours_slept" value="7.5" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Quality (1 - 5)</label>
+                        <select id="sleep_quality" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <option value="5">5 — Very Restful</option>
+                            <option value="4" selected>4 — Good</option>
+                            <option value="3">3 — Fair</option>
+                            <option value="2">2 — Poor</option>
+                            <option value="1">1 — Very Restless</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Fall Asleep Time (Mins)</label>
+                        <input type="number" id="time_to_fall_asleep" value="15" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Night Awakenings</label>
+                        <input type="number" id="awakenings" value="0" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-3 bg-purple-600 text-white font-semibold text-sm rounded-xl shadow hover:bg-purple-700 transition">
+                    Calculate & Save Sleep Record
+                </button>
+            </form>
+        </div>
+
+        <!-- Sleep Score Result Side Column -->
+        <div class="md:col-span-5 space-y-6">
+            <div class="bg-gradient-to-br from-purple-900 to-indigo-900 text-white p-6 rounded-2xl shadow-sm text-center space-y-4">
+                <span class="text-xs font-semibold text-purple-300 uppercase tracking-wider">Sleep Score Engine</span>
+                <div class="w-28 h-28 mx-auto rounded-full border-4 border-purple-400/40 flex items-center justify-center bg-purple-500/10">
+                    <span id="score-val" class="text-4xl font-extrabold">84</span>
+                </div>
+                <p id="score-label" class="text-xs text-purple-200 font-medium">Optimal Sleep Quality</p>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Recent Sleep History</h4>
+                <div id="sleep-history-list" class="space-y-2 text-xs text-slate-600">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    document.getElementById('sleep_date').value = new Date().toISOString().split('T')[0];
+
+    async function loadSleepHistory() {
+        const res = await fetch('/wellness/api/sleep/history?days=5');
+        const data = await res.json();
+        const list = document.getElementById('sleep-history-list');
+        list.innerHTML = '';
+
+        if (data.success && data.data.length > 0) {
+            document.getElementById('score-val').textContent = data.data[0].sleep_score;
+            data.data.forEach(item => {
+                list.innerHTML += `
+                    <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg">
+                        <span>${item.sleep_date}</span>
+                        <span><strong>${item.hours_slept} hrs</strong> (${item.sleep_score} pts)</span>
+                    </div>
+                `;
+            });
+        } else {
+            list.innerHTML = '<p class="text-slate-400 italic">No sleep logs recorded yet.</p>';
+        }
+    }
+
+    async function submitSleep(e) {
+        e.preventDefault();
+        const payload = {
+            sleep_date: document.getElementById('sleep_date').value,
+            hours_slept: parseFloat(document.getElementById('hours_slept').value),
+            sleep_quality: parseInt(document.getElementById('sleep_quality').value),
+            time_to_fall_asleep_minutes: parseInt(document.getElementById('time_to_fall_asleep').value),
+            awakenings_count: parseInt(document.getElementById('awakenings').value),
+            source: 'manual'
+        };
+
+        const res = await fetch('/wellness/api/sleep/log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('score-val').textContent = data.data.sleep_score;
+            loadSleepHistory();
+        }
+    }
+
+    loadSleepHistory();
+</script>
+{% endblock %}

@@ -88,13 +88,33 @@
         </div>
     </div>
 
+    <!-- AI Insight & Recommended Wellness Banner -->
+    {% if wellness_summary and wellness_summary.ai_insight %}
+    <div class="bg-gradient-to-r from-blue-900 to-indigo-900 text-white rounded-2xl p-6 mb-10 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div class="space-y-1">
+            <div class="flex items-center gap-2 text-xs font-semibold text-teal-300 uppercase tracking-wider">
+                <i data-lucide="sparkles" class="w-4 h-4 text-blue-400"></i>
+                <span>AI Wellness Intelligence</span>
+            </div>
+            <h3 class="text-lg font-bold">{{ wellness_summary.ai_insight.headline }}</h3>
+            <p class="text-sm text-slate-300 max-w-2xl leading-relaxed">{{ wellness_summary.ai_insight.summary }}</p>
+        </div>
+        <a href="{{ url_for('wellness.' + wellness_summary.ai_insight.recommended_action + '_page') if wellness_summary.ai_insight.recommended_action in ['breathing', 'meditation', 'focus', 'music', 'sleep'] else url_for('wellness.index') }}" class="px-5 py-2.5 bg-white text-slate-900 font-semibold text-xs rounded-xl hover:bg-slate-100 transition whitespace-nowrap">
+            Take Recommended Action &rarr;
+        </a>
+    </div>
+    {% endif %}
+
     <!-- Main Dashboard Section -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Left 2 Cols: Activities & History -->
         <div class="lg:col-span-2 space-y-8">
             <!-- Recommended Activities -->
             <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-                <h2 class="text-xl font-bold text-secondary mb-4">Recommended Activities</h2>
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-bold text-secondary">Wellness Hub Tools</h2>
+                    <a href="{{ url_for('wellness.index') }}" class="text-xs font-semibold text-primary hover:underline">Open Wellness Hub &rarr;</a>
+                </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="p-4 border border-slate-100 hover:border-blue-100 rounded-xl hover:bg-blue-50/10 transition duration-200 flex items-start space-x-3">
                         <div class="p-2 bg-blue-50 rounded-lg text-primary">
@@ -102,23 +122,24 @@
                         </div>
                         <div>
                             <h4 class="font-semibold text-sm text-secondary">Box Breathing</h4>
-                            <p class="text-xs text-slate-500 mt-1">Calm your nervous system in 4 minutes.</p>
-                            <a href="{{ url_for('wellness.index') }}" class="text-xs font-semibold text-primary mt-2 inline-block">Start Exercise &rarr;</a>
+                            <p class="text-xs text-slate-500 mt-1">Regulate stress & parasympathetic state.</p>
+                            <a href="{{ url_for('wellness.breathing_page') }}" class="text-xs font-semibold text-primary mt-2 inline-block">Start Exercise &rarr;</a>
                         </div>
                     </div>
 
                     <div class="p-4 border border-slate-100 hover:border-blue-100 rounded-xl hover:bg-blue-50/10 transition duration-200 flex items-start space-x-3">
-                        <div class="p-2 bg-teal-50 rounded-lg text-accent">
-                            <i data-lucide="headphones" class="w-5 h-5"></i>
+                        <div class="p-2 bg-purple-50 rounded-lg text-purple-600">
+                            <i data-lucide="moon" class="w-5 h-5"></i>
                         </div>
                         <div>
-                            <h4 class="font-semibold text-sm text-secondary">Morning Focus Audio</h4>
-                            <p class="text-xs text-slate-500 mt-1">Start your day with clarity and peace.</p>
-                            <a href="{{ url_for('wellness.index') }}" class="text-xs font-semibold text-primary mt-2 inline-block">Listen Now &rarr;</a>
+                            <h4 class="font-semibold text-sm text-secondary">Sleep Tracking</h4>
+                            <p class="text-xs text-slate-500 mt-1">Log rest & calculate Sleep Score ({{ wellness_summary.sleep_score.current if wellness_summary else 80 }} pts).</p>
+                            <a href="{{ url_for('wellness.sleep_page') }}" class="text-xs font-semibold text-purple-600 mt-2 inline-block">Log Nightly Sleep &rarr;</a>
                         </div>
                     </div>
                 </div>
             </div>
+
 
             <!-- Recent Journal Entries -->
             <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">

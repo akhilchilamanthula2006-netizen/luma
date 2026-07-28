@@ -140,8 +140,9 @@ def send():
 
     # ── 4. Intelligence analysis (reply + emotion in one API call) ────────────
     reply, emotion, error = IntelligenceService.analyze(
-        username, mood_label, history, user_message
+        username, mood_label, history, user_message, user_id=user_id
     )
+
 
     if error:
         logger.warning("IntelligenceService error for user %s: %s", user_id, error)

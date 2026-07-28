@@ -1,0 +1,91 @@
+{% extends "app_shell.html" %}
+
+{% block title %}Wellness Analytics & Timeline — Luma{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8 pb-12">
+    
+    <div class="flex items-center gap-3">
+        <a href="{{ url_for('wellness.index') }}" class="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition">
+            <i data-lucide="arrow-left" class="w-5 h-5"></i>
+        </a>
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900">Wellness Analytics & Timeline</h1>
+            <p class="text-sm text-slate-500">Chronological activity feed and habit tracking history.</p>
+        </div>
+    </div>
+
+    <!-- Quick Daily Habit Tracker Checklist -->
+    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <h3 class="text-sm font-semibold text-slate-900">Today's Wellness Habits</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs" id="habit-grid">
+            <!-- Rendered via JS -->
+        </div>
+    </div>
+
+    <!-- Unified Timeline List -->
+    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <h3 class="text-sm font-semibold text-slate-900">Unified Activity Feed</h3>
+        <div id="timeline-list" class="space-y-3 divide-y divide-slate-100">
+            <!-- Rendered via JS -->
+        </div>
+    </div>
+
+</div>
+
+<script>
+    async function loadStatsData() {
+        // 1. Fetch Timeline
+        const tRes = await fetch('/wellness/api/timeline?limit=20');
+        const tData = await tRes.json();
+        const tList = document.getElementById('timeline-list');
+        tList.innerHTML = '';
+
+        if (tData.success && tData.data.length > 0) {
+            tData.data.forEach(item => {
+                const dateStr = item.timestamp ? new Date(item.timestamp).toLocaleString() : 'Recent';
+                tList.innerHTML += `
+                    <div class="pt-3 first:pt-0 flex items-start justify-between gap-4 text-xs">
+                        <div class="space-y-1">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-slate-100 text-slate-700">${item.event_type}</span>
+                            <h4 class="text-slate-900 font-medium text-sm">${item.title}</h4>
+                            <p class="text-slate-400">${dateStr}</p>
+                        </div>
+                        <span class="font-semibold text-slate-700 bg-slate-50 px-2.5 py-1 rounded-lg">${item.duration_summary}</span>
+                    </div>
+                `;
+            });
+        } else {
+            tList.innerHTML = '<p class="text-slate-400 italic">No timeline activities recorded yet.</p>';
+        }
+
+        // 2. Fetch Daily Summary / Habits
+        const dRes = await fetch('/wellness/api/dashboard/summary');
+        const dData = await dRes.json();
+        const hGrid = document.getElementById('habit-grid');
+        hGrid.innerHTML = '';
+
+        if (dData.success && dData.data.today_activities) {
+            dData.data.today_activities.items.forEach(act => {
+                hGrid.innerHTML += `
+                    <button onclick="toggleHabit('${act.type}')" class="p-3 rounded-xl border ${act.completed ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-slate-50 border-slate-200 text-slate-600'} text-left flex items-center justify-between transition">
+                        <span class="font-medium capitalize">${act.type}</span>
+                        <i data-lucide="${act.completed ? 'check-circle' : 'circle'}" class="w-4 h-4"></i>
+                    </button>
+                `;
+            });
+        }
+    }
+
+    async function toggleHabit(type) {
+        await fetch('/wellness/api/activities/log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ activity_type: type, value: 1 })
+        });
+        loadStatsData();
+    }
+
+    loadStatsData();
+</script>
+{% endblock %}
