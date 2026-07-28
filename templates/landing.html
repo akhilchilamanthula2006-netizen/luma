@@ -1,134 +1,499 @@
-{% extends "base.html" %}
+{% extends "landing_base.html" %}
 
-{% block title %}Luma - Listening Beyond Words, Caring Beyond Boundaries{% endblock %}
+{% block title %}Luma — Listening Beyond Words, Caring Beyond Boundaries{% endblock %}
 
-{% block content %}
-<!-- Hero Section -->
-<section class="relative overflow-hidden pt-20 pb-28 bg-gradient-to-b from-blue-50/50 via-white to-transparent">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div class="text-center max-w-3xl mx-auto">
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-primary border border-blue-100 mb-6 animate-pulse">
-                Now Live: Luma Initial Preview
-            </span>
-            <h1 class="text-5xl md:text-6xl font-bold tracking-tight text-secondary leading-tight md:leading-none mb-6">
-                Listening Beyond Words,<br>
-                <span class="text-primary bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent">Caring Beyond Boundaries.</span>
-            </h1>
-            <p class="text-lg md:text-xl text-slate-500 font-normal leading-relaxed mb-10">
-                Your AI-powered mental wellness companion that helps you reflect, understand your emotions, and build healthier habits.
-            </p>
-            <div class="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4">
-                <a href="{{ url_for('auth.signup') }}" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-primary text-white font-semibold hover:bg-blue-700 transition duration-300 shadow-lg shadow-blue-500/20 text-center">
-                    Get Started Free
-                </a>
-                <a href="#features" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-white border border-slate-200 text-slate-700 font-semibold hover:bg-slate-50 hover:border-slate-300 transition duration-300 text-center">
-                    Learn More
-                </a>
-            </div>
+{% block landing_content %}
+
+<!-- 1. HERO SECTION -->
+<section id="hero" class="relative min-h-[90vh] flex flex-col justify-center items-center text-center px-6 pt-32 pb-20 z-10">
+    <div class="max-w-4xl mx-auto space-y-8">
+        
+        <!-- Eyebrow Badge -->
+        <div class="hero-el hero-el-1 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-luma-accent/10 border border-luma-accent/20 text-luma-accent text-xs font-medium tracking-wide">
+            <span class="w-1.5 h-1.5 rounded-full bg-luma-accent animate-pulse"></span>
+            <span>AI-Powered Mental Wellness</span>
         </div>
+
+        <!-- Hero Display Headline -->
+        <h1 class="hero-el hero-el-2 text-hero font-light text-luma-text tracking-tight leading-[1.08]">
+            Listening Beyond Words,<br>
+            <span class="font-normal text-transparent bg-clip-text bg-gradient-to-r from-luma-accent via-teal-300 to-cyan-400">
+                Caring Beyond Boundaries.
+            </span>
+        </h1>
+
+        <!-- Sub-headline -->
+        <p class="hero-el hero-el-3 text-lg md:text-xl text-luma-text-sec font-normal leading-relaxed max-w-2xl mx-auto">
+            Your private AI companion that helps you process emotions, track daily moods, and build resilient mental wellness habits — safely and securely.
+        </p>
+
+        <!-- CTAs -->
+        <div class="hero-el hero-el-4 flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+            <a href="{{ url_for('auth.signup') }}" class="luma-btn-primary w-full sm:w-auto text-base font-semibold px-8 py-3.5 rounded-[10px] shadow-lg flex items-center justify-center gap-2">
+                <span>Start Free Reflection</span>
+                <i data-lucide="arrow-right" class="w-4 h-4" stroke-width="1.5"></i>
+            </a>
+            <a href="#how-it-works" class="w-full sm:w-auto text-base font-medium px-8 py-3.5 rounded-[10px] border border-white/10 text-luma-text hover:bg-white/5 transition-colors duration-200 text-center">
+                See How It Works
+            </a>
+        </div>
+
+        <!-- Social Proof Micro-copy -->
+        <div class="hero-el hero-el-5 flex items-center justify-center gap-3 pt-6 text-xs text-luma-text-muted">
+            <div class="flex -space-x-2">
+                <div class="w-6 h-6 rounded-full bg-teal-500/30 border border-luma-bg flex items-center justify-center text-[10px] text-luma-accent font-semibold">A</div>
+                <div class="w-6 h-6 rounded-full bg-indigo-500/30 border border-luma-bg flex items-center justify-center text-[10px] text-indigo-300 font-semibold">M</div>
+                <div class="w-6 h-6 rounded-full bg-cyan-500/30 border border-luma-bg flex items-center justify-center text-[10px] text-cyan-300 font-semibold">S</div>
+            </div>
+            <span>Joined by 200+ early wellness explorers</span>
+        </div>
+
     </div>
-    
-    <!-- Decorative background elements -->
-    <div class="absolute top-1/2 left-0 -translate-y-1/2 w-72 h-72 bg-blue-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 -z-10 animate-float"></div>
-    <div class="absolute top-1/3 right-0 w-80 h-80 bg-teal-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 -z-10 animate-float" style="animation-delay: 2s;"></div>
 </section>
 
-<!-- Features Section -->
-<section id="features" class="py-24 bg-white border-t border-slate-100">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center max-w-3xl mx-auto mb-20">
-            <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-secondary mb-4">
-                Everything you need to support your mind
-            </h2>
-            <p class="text-slate-500">
-                Designed to be a safe, calm space. Discover simple tools backed by science and guided by AI.
+
+<!-- 2. FEATURES SECTION -->
+<section id="features" class="py-28 relative z-10">
+    <div class="max-w-6xl mx-auto px-6">
+        
+        <!-- Section Header -->
+        <div class="text-center max-w-2xl mx-auto mb-20 space-y-4" data-reveal>
+            <p class="text-[11px] font-medium uppercase tracking-[0.08em] text-luma-accent">Core Capabilities</p>
+            <h2 class="text-section font-normal text-luma-text">Designed to support your inner world</h2>
+            <p class="text-base text-luma-text-sec leading-relaxed">
+                Science-aware tools and empathetic AI designed to provide a calm, non-judgmental space every single day.
             </p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Features Grid (3 Columns) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
             <!-- Feature 1: AI Companion -->
-            <div class="group bg-slate-50 hover:bg-white p-8 rounded-2xl border border-slate-100 hover:border-blue-100 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/5">
-                <div class="w-12 h-12 rounded-xl bg-blue-500/10 text-primary flex items-center justify-center mb-6 group-hover:scale-110 transition duration-300">
-                    <i data-lucide="message-square" class="w-6 h-6"></i>
+            <div class="luma-card-standard p-8 rounded-2xl space-y-4" data-reveal>
+                <div class="w-12 h-12 rounded-xl bg-luma-accent/10 text-luma-accent flex items-center justify-center">
+                    <i data-lucide="message-square" class="w-6 h-6" stroke-width="1.5"></i>
                 </div>
-                <h3 class="text-xl font-bold text-secondary mb-3">AI Companion</h3>
-                <p class="text-slate-500 text-sm leading-relaxed">
-                    Have structured, compassionate conversations anytime. Luma listens and helps guide your perspective.
+                <h3 class="text-lg font-medium text-luma-text">AI Wellness Companion</h3>
+                <p class="text-sm text-luma-text-sec leading-relaxed">
+                    Have structured, compassionate conversations anytime. Luma listens, analyzes sentiment, and provides perspective without judgment.
                 </p>
             </div>
 
             <!-- Feature 2: Mood Tracking -->
-            <div class="group bg-slate-50 hover:bg-white p-8 rounded-2xl border border-slate-100 hover:border-blue-100 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/5">
-                <div class="w-12 h-12 rounded-xl bg-teal-500/10 text-accent flex items-center justify-center mb-6 group-hover:scale-110 transition duration-300">
-                    <i data-lucide="smile" class="w-6 h-6"></i>
+            <div class="luma-card-standard p-8 rounded-2xl space-y-4" data-reveal>
+                <div class="w-12 h-12 rounded-xl bg-teal-500/10 text-teal-400 flex items-center justify-center">
+                    <i data-lucide="smile" class="w-6 h-6" stroke-width="1.5"></i>
                 </div>
-                <h3 class="text-xl font-bold text-secondary mb-3">Mood Tracking</h3>
-                <p class="text-slate-500 text-sm leading-relaxed">
-                    Log your daily emotions and energy levels. Spot patterns and trigger points over time with simple checks.
+                <h3 class="text-lg font-medium text-luma-text">Mood & Stress Tracking</h3>
+                <p class="text-sm text-luma-text-sec leading-relaxed">
+                    Log daily emotions and energy levels. Automatically detect trigger points and wellness trends over time.
                 </p>
             </div>
 
-            <!-- Feature 3: Reflection Journal -->
-            <div class="group bg-slate-50 hover:bg-white p-8 rounded-2xl border border-slate-100 hover:border-blue-100 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/5">
-                <div class="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center mb-6 group-hover:scale-110 transition duration-300">
-                    <i data-lucide="book-open" class="w-6 h-6"></i>
+            <!-- Feature 3: Smart Journal -->
+            <div class="luma-card-standard p-8 rounded-2xl space-y-4" data-reveal>
+                <div class="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+                    <i data-lucide="book-open" class="w-6 h-6" stroke-width="1.5"></i>
                 </div>
-                <h3 class="text-xl font-bold text-secondary mb-3">Reflection Journal</h3>
-                <p class="text-slate-500 text-sm leading-relaxed">
-                    Express your thoughts freely. Receive gentle, automated suggestions and summaries of your entries.
+                <h3 class="text-lg font-medium text-luma-text">Smart Reflection Journal</h3>
+                <p class="text-sm text-luma-text-sec leading-relaxed">
+                    Express thoughts freely. Luma runs emotion snapshots to highlight key insights and wellness progress.
                 </p>
             </div>
 
             <!-- Feature 4: Wellness Hub -->
-            <div class="group bg-slate-50 hover:bg-white p-8 rounded-2xl border border-slate-100 hover:border-blue-100 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/5">
-                <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center mb-6 group-hover:scale-110 transition duration-300">
-                    <i data-lucide="heart" class="w-6 h-6"></i>
+            <div class="luma-card-standard p-8 rounded-2xl space-y-4" data-reveal>
+                <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                    <i data-lucide="heart" class="w-6 h-6" stroke-width="1.5"></i>
                 </div>
-                <h3 class="text-xl font-bold text-secondary mb-3">Wellness Hub</h3>
-                <p class="text-slate-500 text-sm leading-relaxed">
-                    Access breathing tools, audio meditations, and quick exercises designed to reduce anxiety and stress.
+                <h3 class="text-lg font-medium text-luma-text">Wellness Hub</h3>
+                <p class="text-sm text-luma-text-sec leading-relaxed">
+                    Access breathing exercises, audio meditations, and quick grounding techniques designed to reduce acute stress.
                 </p>
             </div>
 
-            <!-- Feature 5: Analytics -->
-            <div class="group bg-slate-50 hover:bg-white p-8 rounded-2xl border border-slate-100 hover:border-blue-100 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/5">
-                <div class="w-12 h-12 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center mb-6 group-hover:scale-110 transition duration-300">
-                    <i data-lucide="bar-chart-2" class="w-6 h-6"></i>
+            <!-- Feature 5: Analytics & Insights -->
+            <div class="luma-card-standard p-8 rounded-2xl space-y-4" data-reveal>
+                <div class="w-12 h-12 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
+                    <i data-lucide="bar-chart-2" class="w-6 h-6" stroke-width="1.5"></i>
                 </div>
-                <h3 class="text-xl font-bold text-secondary mb-3">Analytics</h3>
-                <p class="text-slate-500 text-sm leading-relaxed">
-                    Beautiful, private visualizations of your wellness journey. Watch your progress grow week after week.
+                <h3 class="text-lg font-medium text-luma-text">Emotional Analytics</h3>
+                <p class="text-sm text-luma-text-sec leading-relaxed">
+                    Clear, beautiful visual breakdowns of your emotional patterns over days, weeks, and months.
                 </p>
             </div>
 
-            <!-- Premium Badge/Coming Soon -->
-            <div class="bg-gradient-to-br from-slate-900 to-slate-800 p-8 rounded-2xl border border-slate-800 hover:shadow-xl text-white flex flex-col justify-between">
-                <div>
-                    <h3 class="text-xl font-bold mb-3">A Companion In Your Pocket</h3>
-                    <p class="text-slate-300 text-sm leading-relaxed">
-                        Luma is designed to support you wherever you are, 24/7. Fully secure and private.
+            <!-- Feature 6: Privacy-First Highlight -->
+            <div class="luma-card-standard p-8 rounded-2xl space-y-4 bg-gradient-to-br from-luma-surface-1 to-luma-surface-2 border-luma-accent/20" data-reveal>
+                <div class="w-12 h-12 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center">
+                    <i data-lucide="shield-check" class="w-6 h-6" stroke-width="1.5"></i>
+                </div>
+                <h3 class="text-lg font-medium text-luma-text">Privacy-First Protection</h3>
+                <p class="text-sm text-luma-text-sec leading-relaxed">
+                    Your personal reflections are strictly confidential. Encrypted, private, and never sold to third parties.
+                </p>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- 3. HOW LUMA WORKS SECTION -->
+<section id="how-it-works" class="py-28 relative z-10 border-t border-white/[0.05]">
+    <div class="max-w-6xl mx-auto px-6">
+        
+        <div class="text-center max-w-2xl mx-auto mb-20 space-y-4" data-reveal>
+            <p class="text-[11px] font-medium uppercase tracking-[0.08em] text-luma-accent">Simple Process</p>
+            <h2 class="text-section font-normal text-luma-text">How Luma supports your day</h2>
+            <p class="text-base text-luma-text-sec leading-relaxed">
+                Three effortless steps to transform daily stress into emotional clarity.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+            
+            <!-- Step 1 -->
+            <div class="luma-card-standard p-8 rounded-2xl space-y-4 relative" data-reveal>
+                <div class="w-10 h-10 rounded-full bg-luma-accent/10 border border-luma-accent/30 text-luma-accent font-semibold text-sm flex items-center justify-center">1</div>
+                <h3 class="text-lg font-medium text-luma-text">Check In & Reflect</h3>
+                <p class="text-sm text-luma-text-sec leading-relaxed">
+                    Share your current mood or type a journal entry whenever you need to process a thought or feeling.
+                </p>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="luma-card-standard p-8 rounded-2xl space-y-4 relative" data-reveal>
+                <div class="w-10 h-10 rounded-full bg-luma-accent/10 border border-luma-accent/30 text-luma-accent font-semibold text-sm flex items-center justify-center">2</div>
+                <h3 class="text-lg font-medium text-luma-text">AI Analysis</h3>
+                <p class="text-sm text-luma-text-sec leading-relaxed">
+                    Luma's intelligence engine evaluates primary emotion, stress level, and key themes to offer gentle context.
+                </p>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="luma-card-standard p-8 rounded-2xl space-y-4 relative" data-reveal>
+                <div class="w-10 h-10 rounded-full bg-luma-accent/10 border border-luma-accent/30 text-luma-accent font-semibold text-sm flex items-center justify-center">3</div>
+                <h3 class="text-lg font-medium text-luma-text">Receive Guidance</h3>
+                <p class="text-sm text-luma-text-sec leading-relaxed">
+                    Get tailored grounding exercises, constructive suggestions, and long-term mood insights.
+                </p>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- 4. AI PREVIEW SECTION -->
+<section id="ai-preview" class="py-28 relative z-10 border-t border-white/[0.05]">
+    <div class="max-w-6xl mx-auto px-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            <!-- Left Text Column -->
+            <div class="lg:col-span-5 space-y-6" data-reveal>
+                <p class="text-[11px] font-medium uppercase tracking-[0.08em] text-luma-accent">Real-Time Intelligence</p>
+                <h2 class="text-section font-normal text-luma-text">Conversations that adapt to how you feel</h2>
+                <p class="text-base text-luma-text-sec leading-relaxed">
+                    Luma doesn't just reply — it detects emotional nuances, monitors stress indicators, and provides thoughtful recommendations.
+                </p>
+                <div class="pt-2 flex items-center gap-4 text-xs text-luma-text-sec">
+                    <div class="flex items-center gap-1.5">
+                        <i data-lucide="check-circle" class="w-4 h-4 text-luma-accent" stroke-width="1.5"></i>
+                        <span>Emotion Detection</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <i data-lucide="check-circle" class="w-4 h-4 text-luma-accent" stroke-width="1.5"></i>
+                        <span>Risk Awareness</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Simulated AI Streaming Card (R4) -->
+            <div class="lg:col-span-7" data-reveal>
+                <div class="luma-card-elevated rounded-2xl p-6 md:p-8 space-y-6 relative overflow-hidden border border-white/10">
+                    
+                    <!-- Header Bar -->
+                    <div class="flex items-center justify-between border-b border-white/5 pb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-luma-accent/20 border border-luma-accent/30 flex items-center justify-center text-luma-accent">
+                                <i data-lucide="sparkles" class="w-4 h-4" stroke-width="1.5"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-medium text-luma-text">Luma AI</h4>
+                                <p class="text-[11px] text-luma-text-muted">Listening Mode Active</p>
+                            </div>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-full text-[11px] font-medium bg-luma-accent/10 text-luma-accent border border-luma-accent/20">
+                            Feeling: Reflective
+                        </span>
+                    </div>
+
+                    <!-- Chat Bubbles Container -->
+                    <div class="space-y-4 text-sm leading-relaxed">
+                        
+                        <!-- User Bubble -->
+                        <div class="flex justify-end">
+                            <div class="bg-luma-surface-1 border border-white/10 rounded-2xl rounded-tr-sm px-4 py-3 text-luma-text max-w-[85%]">
+                                I've been feeling overwhelmed lately. I'm not sure where to start.
+                            </div>
+                        </div>
+
+                        <!-- AI Response Streaming Bubble -->
+                        <div class="flex justify-start">
+                            <div class="bg-luma-accent/10 border border-luma-accent/20 rounded-2xl rounded-tl-sm px-4 py-3 text-luma-text max-w-[90%] space-y-2">
+                                <p id="ai-stream-target" 
+                                   data-stream-text="That's okay — feeling overwhelmed is often a signal that you're carrying more than you've acknowledged. Let's slow down together. Can you tell me what feels heaviest right now?"></p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Footer Analytics Bar -->
+                    <div class="pt-4 border-t border-white/5 flex items-center justify-between text-xs text-luma-text-muted">
+                        <span>Stress Level: Moderate (42%)</span>
+                        <span class="text-luma-accent">Recommendation: 3-Min Grounding</span>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- 5. WHY CHOOSE LUMA SECTION -->
+<section id="why-luma" class="py-28 relative z-10 border-t border-white/[0.05]">
+    <div class="max-w-6xl mx-auto px-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            <!-- Left Statement Block -->
+            <div class="lg:col-span-5 space-y-6" data-reveal>
+                <p class="text-[11px] font-medium uppercase tracking-[0.08em] text-luma-accent">Our Commitment</p>
+                <h2 class="text-section font-normal text-luma-text">Mental wellness built on trust and respect</h2>
+                <p class="text-base text-luma-text-sec leading-relaxed">
+                    We designed Luma with zero compromises on privacy, security, or empathy.
+                </p>
+            </div>
+
+            <!-- Right Value Propositions List -->
+            <div class="lg:col-span-7 space-y-4" data-reveal>
+                
+                <div class="luma-card-standard p-6 rounded-xl flex items-start gap-4">
+                    <div class="w-8 h-8 rounded-lg bg-luma-accent/10 text-luma-accent flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <i data-lucide="check-circle" class="w-4 h-4" stroke-width="1.5"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-base font-medium text-luma-text">Privacy-First Architecture</h4>
+                        <p class="text-xs text-luma-text-sec mt-1">Your reflection journals and conversation histories are strictly protected.</p>
+                    </div>
+                </div>
+
+                <div class="luma-card-standard p-6 rounded-xl flex items-start gap-4">
+                    <div class="w-8 h-8 rounded-lg bg-luma-accent/10 text-luma-accent flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <i data-lucide="check-circle" class="w-4 h-4" stroke-width="1.5"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-base font-medium text-luma-text">Zero Data Selling</h4>
+                        <p class="text-xs text-luma-text-sec mt-1">We never monetize your emotional data or share records with third parties.</p>
+                    </div>
+                </div>
+
+                <div class="luma-card-standard p-6 rounded-xl flex items-start gap-4">
+                    <div class="w-8 h-8 rounded-lg bg-luma-accent/10 text-luma-accent flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <i data-lucide="check-circle" class="w-4 h-4" stroke-width="1.5"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-base font-medium text-luma-text">24/7 Availability</h4>
+                        <p class="text-xs text-luma-text-sec mt-1">Whether at 2 AM or 2 PM, your companion is ready whenever you need to reflect.</p>
+                    </div>
+                </div>
+
+                <div class="luma-card-standard p-6 rounded-xl flex items-start gap-4">
+                    <div class="w-8 h-8 rounded-lg bg-luma-accent/10 text-luma-accent flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <i data-lucide="check-circle" class="w-4 h-4" stroke-width="1.5"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-base font-medium text-luma-text">Clinically Aware Boundaries</h4>
+                        <p class="text-xs text-luma-text-sec mt-1">Luma detects crisis indicators and immediately surfaces professional helpline resources.</p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- 6. TESTIMONIALS / EARLY ACCESS PLACEHOLDER SECTION (R5) -->
+<section id="testimonials" class="py-28 relative z-10 border-t border-white/[0.05]">
+    <div class="max-w-6xl mx-auto px-6">
+        
+        <div class="text-center max-w-2xl mx-auto mb-16 space-y-4" data-reveal>
+            <p class="text-[11px] font-medium uppercase tracking-[0.08em] text-luma-accent">Early Access</p>
+            <h2 class="text-section font-normal text-luma-text">Be among the first</h2>
+            <p class="text-base text-luma-text-sec leading-relaxed">
+                Luma is in early preview. Your reflections today shape the future of personalized AI wellness.
+            </p>
+        </div>
+
+        <!-- 3 Prompt Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <!-- Prompt 1 -->
+            <div class="luma-card-standard p-8 rounded-2xl space-y-6 relative overflow-hidden" data-reveal>
+                <span class="text-6xl font-serif text-luma-accent/20 absolute top-4 right-6 pointer-events-none select-none">“</span>
+                <p class="text-sm italic text-luma-text-sec leading-relaxed pt-4">
+                    "What would you tell yourself on a day when everything feels heavy?"
+                </p>
+                <div class="pt-4 border-t border-white/5 flex items-center justify-between text-xs">
+                    <span class="text-luma-text-muted">Daily Reflection Prompt</span>
+                    <a href="{{ url_for('auth.signup') }}" class="text-luma-accent hover:underline flex items-center gap-1">
+                        <span>Reflect now</span>
+                        <i data-lucide="arrow-right" class="w-3.5 h-3.5" stroke-width="1.5"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Prompt 2 -->
+            <div class="luma-card-standard p-8 rounded-2xl space-y-6 relative overflow-hidden" data-reveal>
+                <span class="text-6xl font-serif text-luma-accent/20 absolute top-4 right-6 pointer-events-none select-none">“</span>
+                <p class="text-sm italic text-luma-text-sec leading-relaxed pt-4">
+                    "How has acknowledging your small wins shifted your perspective this week?"
+                </p>
+                <div class="pt-4 border-t border-white/5 flex items-center justify-between text-xs">
+                    <span class="text-luma-text-muted">Gratitude Prompt</span>
+                    <a href="{{ url_for('auth.signup') }}" class="text-luma-accent hover:underline flex items-center gap-1">
+                        <span>Reflect now</span>
+                        <i data-lucide="arrow-right" class="w-3.5 h-3.5" stroke-width="1.5"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Prompt 3 -->
+            <div class="luma-card-standard p-8 rounded-2xl space-y-6 relative overflow-hidden" data-reveal>
+                <span class="text-6xl font-serif text-luma-accent/20 absolute top-4 right-6 pointer-events-none select-none">“</span>
+                <p class="text-sm italic text-luma-text-sec leading-relaxed pt-4">
+                    "What does true calm feel like to you in this exact moment?"
+                </p>
+                <div class="pt-4 border-t border-white/5 flex items-center justify-between text-xs">
+                    <span class="text-luma-text-muted">Mindfulness Prompt</span>
+                    <a href="{{ url_for('auth.signup') }}" class="text-luma-accent hover:underline flex items-center gap-1">
+                        <span>Reflect now</span>
+                        <i data-lucide="arrow-right" class="w-3.5 h-3.5" stroke-width="1.5"></i>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- 7. FAQ SECTION -->
+<section id="faq" class="py-28 relative z-10 border-t border-white/[0.05]">
+    <div class="max-w-3xl mx-auto px-6">
+        
+        <div class="text-center mb-16 space-y-4" data-reveal>
+            <p class="text-[11px] font-medium uppercase tracking-[0.08em] text-luma-accent">Got Questions?</p>
+            <h2 class="text-section font-normal text-luma-text">Frequently asked questions</h2>
+        </div>
+
+        <!-- Accordion List -->
+        <div class="space-y-4" data-reveal>
+            
+            <!-- Q1 -->
+            <div class="luma-card-standard rounded-xl p-6">
+                <button class="faq-trigger w-full flex items-center justify-between text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-luma-accent rounded"
+                        aria-expanded="false"
+                        aria-controls="faq-ans-1">
+                    <span class="text-base font-medium text-luma-text">Is my personal journal data private?</span>
+                    <i data-lucide="chevron-down" class="faq-icon w-5 h-5 text-luma-text-sec flex-shrink-0" stroke-width="1.5"></i>
+                </button>
+                <div id="faq-ans-1" class="faq-answer">
+                    <p class="text-sm text-luma-text-sec leading-relaxed pt-4">
+                        Yes, completely. Your journal entries and chat history belong solely to you. We do not sell data or use your personal reflections for third-party advertising.
                     </p>
                 </div>
-                <div class="mt-8 flex items-center space-x-2 text-accent font-medium text-sm">
-                    <span>Explore Dashboard</span>
-                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </div>
+
+            <!-- Q2 -->
+            <div class="luma-card-standard rounded-xl p-6">
+                <button class="faq-trigger w-full flex items-center justify-between text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-luma-accent rounded"
+                        aria-expanded="false"
+                        aria-controls="faq-ans-2">
+                    <span class="text-base font-medium text-luma-text">Does Luma replace professional therapy?</span>
+                    <i data-lucide="chevron-down" class="faq-icon w-5 h-5 text-luma-text-sec flex-shrink-0" stroke-width="1.5"></i>
+                </button>
+                <div id="faq-ans-2" class="faq-answer">
+                    <p class="text-sm text-luma-text-sec leading-relaxed pt-4">
+                        No. Luma is a self-reflection and daily wellness companion, not a licensed healthcare provider. In acute distress, Luma provides immediate access to emergency crisis helplines.
+                    </p>
                 </div>
             </div>
+
+            <!-- Q3 -->
+            <div class="luma-card-standard rounded-xl p-6">
+                <button class="faq-trigger w-full flex items-center justify-between text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-luma-accent rounded"
+                        aria-expanded="false"
+                        aria-controls="faq-ans-3">
+                    <span class="text-base font-medium text-luma-text">How does emotion detection work?</span>
+                    <i data-lucide="chevron-down" class="faq-icon w-5 h-5 text-luma-text-sec flex-shrink-0" stroke-width="1.5"></i>
+                </button>
+                <div id="faq-ans-3" class="faq-answer">
+                    <p class="text-sm text-luma-text-sec leading-relaxed pt-4">
+                        Luma uses advanced natural language processing to identify sentiment patterns, stress levels, and emotional keywords in your entries to generate helpful summaries.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Q4 -->
+            <div class="luma-card-standard rounded-xl p-6">
+                <button class="faq-trigger w-full flex items-center justify-between text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-luma-accent rounded"
+                        aria-expanded="false"
+                        aria-controls="faq-ans-4">
+                    <span class="text-base font-medium text-luma-text">Is Luma free to use?</span>
+                    <i data-lucide="chevron-down" class="faq-icon w-5 h-5 text-luma-text-sec flex-shrink-0" stroke-width="1.5"></i>
+                </button>
+                <div id="faq-ans-4" class="faq-answer">
+                    <p class="text-sm text-luma-text-sec leading-relaxed pt-4">
+                        Yes, Luma is free during our initial preview release. You can sign up and start reflecting immediately.
+                    </p>
+                </div>
+            </div>
+
         </div>
     </div>
 </section>
 
-<!-- About / Quote Section -->
-<section id="about" class="py-20 bg-slate-50/50">
-    <div class="max-w-4xl mx-auto px-4 text-center">
-        <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto shadow-sm mb-8">
-            <i data-lucide="quote" class="w-5 h-5 text-slate-400"></i>
+
+<!-- 8. FINAL CTA SECTION -->
+<section id="cta" class="py-32 relative z-10 border-t border-white/[0.05]">
+    <div class="max-w-4xl mx-auto px-6 text-center">
+        <div class="luma-card-elevated p-12 md:p-16 rounded-3xl relative overflow-hidden space-y-8 shadow-[0_0_80px_rgba(93,216,208,0.08)]">
+            
+            <h2 class="text-section font-normal text-luma-text max-w-xl mx-auto">
+                Begin your journey toward daily emotional clarity
+            </h2>
+
+            <p class="text-base text-luma-text-sec max-w-md mx-auto leading-relaxed">
+                Join early access today and build a calmer, more mindful relationship with your thoughts.
+            </p>
+
+            <div class="pt-2">
+                <a href="{{ url_for('auth.signup') }}" class="luma-btn-primary inline-flex items-center gap-2 text-base font-semibold px-9 py-4 rounded-[10px] shadow-lg">
+                    <span>Create Free Account</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4" stroke-width="1.5"></i>
+                </a>
+            </div>
+
+            <p class="text-xs text-luma-text-muted">No credit card required · Instant access</p>
+
         </div>
-        <p class="text-2xl md:text-3xl font-light text-slate-700 leading-relaxed italic mb-8">
-            "Mental wellness isn't a destination, it's a practice. Luma is built to provide that safe foundation for daily check-ins and genuine self-discovery."
-        </p>
-        <div class="font-semibold text-secondary">The Luma Design Team</div>
-        <div class="text-xs text-slate-400 mt-1">Calm & Apple Inspired Architecture</div>
     </div>
 </section>
+
 {% endblock %}
+

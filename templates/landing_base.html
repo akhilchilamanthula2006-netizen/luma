@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Luma — AI Mental Wellness Companion{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}Luma is your AI-powered mental wellness companion. Reflect, understand your emotions, and build healthier habits — privately and securely.{% endblock %}">
+    <meta name="theme-color" content="#080d1a">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Luma — AI Mental Wellness Companion">
+    <meta property="og:description" content="Reflect, understand your emotions, and build healthier habits with AI-guided mental wellness.">
+    <meta property="og:type" content="website">
+
+    <!-- Favicon slot (replace with final SVG when ready) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%235dd8d0'/><text x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='18' font-family='Inter,sans-serif' fill='%23080d1a' font-weight='600'>L</text></svg>" type="image/svg+xml">
+
+    <!-- Preload landing script -->
+    <link rel="preload" href="{{ url_for('static', filename='js/landing.js') }}" as="script">
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS v3 CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'luma-bg':         '#080d1a',
+                        'luma-surface-1':  '#0d1424',
+                        'luma-surface-2':  '#111827',
+                        'luma-accent':     '#5dd8d0',
+                        'luma-text':       '#e8edf5',
+                        'luma-text-sec':   '#8b95a8',
+                        'luma-text-muted': '#4d5a6e',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Landing-specific CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-luma-bg text-luma-text font-sans antialiased overflow-x-hidden">
+
+    <!-- Skip to content (accessibility) -->
+    <a href="#main-content"
+       class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-luma-accent focus:text-luma-bg focus:rounded-lg focus:text-sm focus:font-semibold focus:shadow-lg">
+        Skip to main content
+    </a>
+
+    <!-- Particle Canvas — fixed full-screen background -->
+    <canvas id="luma-particle-canvas" aria-hidden="true" focusable="false"></canvas>
+
+    <!-- Navigation -->
+    <header id="luma-nav" role="banner" class="fixed top-0 left-0 right-0 z-50 luma-nav-transition">
+        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+
+            <!-- Logo Slot -->
+            <a href="{{ url_for('home') }}"
+               id="luma-logo"
+               aria-label="Luma — Return to homepage"
+               class="flex items-center gap-2 flex-shrink-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-luma-accent focus-visible:ring-offset-2 focus-visible:ring-offset-luma-bg">
+                <!-- SLOT: logo-symbol — Replace contents with final SVG (32x32) -->
+                <div class="logo-symbol w-8 h-8 rounded-lg bg-luma-accent/20 border border-luma-accent/25 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-luma-accent" stroke-width="1.5"></i>
+                </div>
+                <!-- SLOT: logo-wordmark — Replace with SVG wordmark or keep text -->
+                <span class="logo-wordmark text-[20px] font-semibold tracking-tight text-luma-text">Luma</span>
+            </a>
+
+            <!-- Desktop nav links -->
+            <nav class="hidden md:flex items-center gap-8" aria-label="Page sections">
+                <a href="#features"     class="text-sm text-luma-text-sec hover:text-luma-text transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-luma-accent rounded">Features</a>
+                <a href="#how-it-works" class="text-sm text-luma-text-sec hover:text-luma-text transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-luma-accent rounded">How It Works</a>
+                <a href="#ai-preview"   class="text-sm text-luma-text-sec hover:text-luma-text transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-luma-accent rounded">AI Preview</a>
+            </nav>
+
+            <!-- Desktop auth buttons -->
+            <div class="hidden md:flex items-center gap-3">
+                <a href="{{ url_for('auth.login') }}"
+                   class="text-sm font-medium text-luma-text-sec hover:text-luma-text px-3 py-2 rounded-lg hover:bg-white/5 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-luma-accent">
+                    Login
+                </a>
+                <a href="{{ url_for('auth.signup') }}"
+                   class="luma-btn-primary text-sm font-medium px-5 py-2.5 rounded-[10px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-luma-accent focus-visible:ring-offset-2 focus-visible:ring-offset-luma-bg">
+                    Get Started
+                </a>
+            </div>
+
+            <!-- Mobile hamburger -->
+            <button id="mobile-menu-btn"
+                    aria-expanded="false"
+                    aria-controls="mobile-menu"
+                    aria-label="Open navigation menu"
+                    class="md:hidden w-10 h-10 flex items-center justify-center rounded-lg text-luma-text-sec hover:text-luma-text hover:bg-white/5 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-luma-accent">
+                <i data-lucide="menu" class="w-5 h-5" stroke-width="1.5"></i>
+            </button>
+        </div>
+
+        <!-- Mobile drawer -->
+        <div id="mobile-menu"
+             role="dialog"
+             aria-modal="true"
+             aria-label="Navigation menu"
+             class="hidden md:hidden border-t border-white/[0.07] bg-luma-bg/95 backdrop-blur-[12px] px-6 py-4 space-y-1">
+            <a href="#features"     class="block px-3 py-2.5 text-sm font-medium text-luma-text-sec hover:text-luma-text hover:bg-white/5 rounded-lg transition-colors duration-200">Features</a>
+            <a href="#how-it-works" class="block px-3 py-2.5 text-sm font-medium text-luma-text-sec hover:text-luma-text hover:bg-white/5 rounded-lg transition-colors duration-200">How It Works</a>
+            <a href="#ai-preview"   class="block px-3 py-2.5 text-sm font-medium text-luma-text-sec hover:text-luma-text hover:bg-white/5 rounded-lg transition-colors duration-200">AI Preview</a>
+            <div class="pt-3 border-t border-white/[0.07] flex flex-col gap-2">
+                <a href="{{ url_for('auth.login') }}"  class="block px-3 py-2.5 text-sm font-medium text-luma-text-sec hover:text-luma-text hover:bg-white/5 rounded-lg transition-colors duration-200">Login</a>
+                <a href="{{ url_for('auth.signup') }}" class="luma-btn-primary block text-center text-sm font-medium px-5 py-2.5 rounded-[10px]">Get Started</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Page Content -->
+    <main id="main-content" role="main">
+        {% block landing_content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer id="luma-footer" role="contentinfo" class="border-t border-white/[0.07] py-16">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8">
+
+                <!-- Brand -->
+                <div class="space-y-4">
+                    <a href="{{ url_for('home') }}" class="flex items-center gap-2 w-fit rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-luma-accent">
+                        <div class="w-7 h-7 rounded-md bg-luma-accent/20 border border-luma-accent/25 flex items-center justify-center">
+                            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-luma-accent" stroke-width="1.5"></i>
+                        </div>
+                        <span class="text-base font-semibold tracking-tight text-luma-text">Luma</span>
+                    </a>
+                    <p class="text-[13px] text-luma-text-muted leading-relaxed max-w-[220px]">
+                        AI-powered mental wellness. Calm, private, and always here.
+                    </p>
+                </div>
+
+                <!-- Product links -->
+                <div class="space-y-3">
+                    <p class="text-[11px] font-medium uppercase tracking-[0.08em] text-luma-text-muted">Product</p>
+                    <nav class="space-y-2.5" aria-label="Footer product links">
+                        <a href="#features"     class="block text-[13px] text-luma-text-sec hover:text-luma-text transition-colors duration-200">Features</a>
+                        <a href="#how-it-works" class="block text-[13px] text-luma-text-sec hover:text-luma-text transition-colors duration-200">How It Works</a>
+                        <a href="#ai-preview"   class="block text-[13px] text-luma-text-sec hover:text-luma-text transition-colors duration-200">AI Preview</a>
+                        <a href="#faq"          class="block text-[13px] text-luma-text-sec hover:text-luma-text transition-colors duration-200">FAQ</a>
+                    </nav>
+                </div>
+
+                <!-- Legal -->
+                <div class="space-y-3">
+                    <p class="text-[11px] font-medium uppercase tracking-[0.08em] text-luma-text-muted">Legal</p>
+                    <nav class="space-y-2.5" aria-label="Legal links">
+                        <a href="#" class="block text-[13px] text-luma-text-sec hover:text-luma-text transition-colors duration-200">Privacy Policy</a>
+                        <a href="#" class="block text-[13px] text-luma-text-sec hover:text-luma-text transition-colors duration-200">Terms of Service</a>
+                    </nav>
+                    <p class="text-[13px] text-luma-text-muted pt-4">&copy; 2026 Luma. All rights reserved.</p>
+                </div>
+
+            </div>
+        </div>
+    </footer>
+
+    <!-- Initialize Lucide Icons -->
+    <script>lucide.createIcons();</script>
+
+    <!-- Landing JS (deferred) -->
+    <script src="{{ url_for('static', filename='js/landing.js') }}" defer></script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
