@@ -1,83 +1,450 @@
 {% extends "app_shell.html" %}
 
-{% block title %}Analytics - Luma{% endblock %}
-{% block page_title %}Analytics{% endblock %}
+{% block title %}Analytics & Progress — Luma{% endblock %}
+{% block page_title %}Analytics & Progress{% endblock %}
 
 {% block extra_head %}
-<!-- Chart.js -->
+<!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold tracking-tight text-secondary">Analytics Dashboard</h1>
-        <p class="text-slate-500 mt-1">Track and understand your emotional trends over time.</p>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <h1 class="text-3xl font-bold tracking-tight text-secondary">Analytics & Progress</h1>
+            <p class="text-slate-500 mt-1">Track your 7-day emotional trends, sleep quality, habit metrics, and AI wellness insights.</p>
+        </div>
+        <div class="flex items-center space-x-3">
+            <a href="{{ url_for('dashboard.index') }}" class="inline-flex items-center px-4 py-2 border border-slate-200 text-sm font-medium rounded-xl text-slate-700 bg-white hover:bg-slate-50 transition shadow-sm">
+                <i data-lucide="layout-dashboard" class="w-4 h-4 mr-2 text-slate-500"></i> Dashboard
+            </a>
+            <a href="{{ url_for('wellness.index') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl text-white bg-primary hover:bg-blue-700 transition shadow-sm">
+                <i data-lucide="heart" class="w-4 h-4 mr-2"></i> Wellness Hub
+            </a>
+        </div>
     </div>
 
+    <!-- 1. Summary Cards Grid (4 Cards) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Card 1: Wellness Score -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+            <div>
+                <span class="text-xs text-slate-400 font-medium uppercase tracking-wider block mb-1">Wellness Score</span>
+                <div class="flex items-baseline space-x-2">
+                    <span class="text-3xl font-bold text-secondary">{{ summary.wellness_score.current }}</span>
+                    <span class="text-xs text-slate-400 font-medium">/ 100</span>
+                </div>
+                <span class="inline-block mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-semibold
+                    {% if summary.wellness_score.current >= 80 %}bg-emerald-50 text-emerald-600 border border-emerald-100
+                    {% elif summary.wellness_score.current >= 65 %}bg-teal-50 text-teal-600 border border-teal-100
+                    {% else %}bg-amber-50 text-amber-600 border border-amber-100{% endif %}">
+                    {{ summary.wellness_score.label }}
+                </span>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-blue-50 text-primary flex items-center justify-center flex-shrink-0">
+                <i data-lucide="activity" class="w-6 h-6"></i>
+            </div>
+        </div>
+
+        <!-- Card 2: Sleep Score -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+            <div>
+                <span class="text-xs text-slate-400 font-medium uppercase tracking-wider block mb-1">Sleep Score</span>
+                <div class="flex items-baseline space-x-2">
+                    <span class="text-3xl font-bold text-secondary">{{ summary.sleep_score.current }}</span>
+                    <span class="text-xs text-slate-400 font-medium">pts</span>
+                </div>
+                <span class="text-xs text-slate-500 mt-2 block font-medium">
+                    Last night: <strong class="text-secondary">{{ summary.sleep_score.last_night_hours }} hrs</strong>
+                </span>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center flex-shrink-0">
+                <i data-lucide="moon" class="w-6 h-6"></i>
+            </div>
+        </div>
+
+        <!-- Card 3: Current Streak -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+            <div>
+                <span class="text-xs text-slate-400 font-medium uppercase tracking-wider block mb-1">Current Streak</span>
+                <div class="flex items-baseline space-x-2">
+                    <span class="text-3xl font-bold text-secondary">{{ summary.current_streak.days }}</span>
+                    <span class="text-xs text-slate-400 font-medium">Days</span>
+                </div>
+                <span class="text-xs text-emerald-600 font-semibold mt-2 inline-flex items-center gap-1">
+                    <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Active Streak
+                </span>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
+                <i data-lucide="zap" class="w-6 h-6"></i>
+            </div>
+        </div>
+
+        <!-- Card 4: Weekly Activities -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+            <div>
+                <span class="text-xs text-slate-400 font-medium uppercase tracking-wider block mb-1">Weekly Activities</span>
+                <div class="flex items-baseline space-x-2">
+                    <span class="text-3xl font-bold text-secondary">{{ analytics.total_weekly_activities }}</span>
+                    <span class="text-xs text-slate-400 font-medium">logged</span>
+                </div>
+                <span class="text-xs text-slate-500 font-medium mt-2 block">
+                    Across 7 wellness tools
+                </span>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center flex-shrink-0">
+                <i data-lucide="check-square" class="w-6 h-6"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Chart.js Graphs Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- Mood Chart -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-            <h3 class="text-lg font-bold text-secondary mb-4">Mood Trends (7 Days)</h3>
-            <div class="h-64 flex items-center justify-center bg-slate-50 rounded-xl relative">
-                <canvas id="moodChart" class="p-2"></canvas>
+        <!-- Chart 1: 7-Day Wellness Score Trend -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-bold text-secondary">Wellness Score (7 Days)</h3>
+                    <p class="text-xs text-slate-400">Daily balance score trajectory</p>
+                </div>
+                <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-primary">0–100 Scale</span>
+            </div>
+            <div class="h-64 relative">
+                <canvas id="wellnessChart"></canvas>
             </div>
         </div>
 
-        <!-- Energy Level Chart -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-            <h3 class="text-lg font-bold text-secondary mb-4">Energy Distribution</h3>
-            <div class="h-64 flex items-center justify-center bg-slate-50 rounded-xl relative">
-                <canvas id="energyChart" class="p-2"></canvas>
+        <!-- Chart 2: 7-Day Sleep Duration -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-bold text-secondary">Sleep Duration (7 Days)</h3>
+                    <p class="text-xs text-slate-400">Hours slept per night (Optimal: 7.5–9h)</p>
+                </div>
+                <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-600">Hours</span>
+            </div>
+            <div class="h-64 relative">
+                <canvas id="sleepChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Chart 3: Mood Frequency Distribution -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-bold text-secondary">Mood Trend</h3>
+                    <p class="text-xs text-slate-400">Frequency of recorded emotions</p>
+                </div>
+                <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-600">7-Day Log</span>
+            </div>
+            <div class="h-64 relative">
+                <canvas id="moodChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Chart 4: Activity Breakdown (Doughnut) -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-bold text-secondary">Activity Distribution</h3>
+                    <p class="text-xs text-slate-400">Usage across wellness modules</p>
+                </div>
+                <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-teal-50 text-teal-600">Breakdown</span>
+            </div>
+            <div class="h-64 relative">
+                <canvas id="activityChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Chart 5: Meditation & Breathing Time (Stacked Bar) -->
+        <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-bold text-secondary">Mindfulness Time (Meditation vs Breathing)</h3>
+                    <p class="text-xs text-slate-400">Daily minutes dedicated to parasympathetic breathing & meditation</p>
+                </div>
+                <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-600">Minutes / Day</span>
+            </div>
+            <div class="h-64 relative">
+                <canvas id="mindfulnessChart"></canvas>
             </div>
         </div>
     </div>
+
+    <!-- 3. AI Weekly Summary Section -->
+    <div class="bg-slate-900 text-white rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center">
+                    <i data-lucide="sparkles" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-white">AI Weekly Insights & Recommendation</h2>
+                    <p class="text-xs text-slate-400">Synthesized multi-module health & habit intelligence</p>
+                </div>
+            </div>
+            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-300 border border-blue-500/20">
+                Weekly Analysis
+            </span>
+        </div>
+
+        <!-- Progress Overview -->
+        <div class="bg-slate-800/50 rounded-xl p-5 border border-slate-800">
+            <h4 class="text-xs font-semibold text-blue-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                <i data-lucide="trending-up" class="w-4 h-4"></i> Overall Progress
+            </h4>
+            <p class="text-sm text-slate-200 leading-relaxed">
+                {{ ai_summary.overall_progress }}
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Positive Habits -->
+            <div class="bg-slate-800/40 rounded-xl p-5 border border-slate-800/80 space-y-3">
+                <h4 class="text-xs font-semibold text-emerald-400 uppercase tracking-wider flex items-center gap-2">
+                    <i data-lucide="check-circle-2" class="w-4 h-4"></i> Positive Habits
+                </h4>
+                <ul class="space-y-2 text-xs text-slate-300">
+                    {% for habit in ai_summary.positive_habits %}
+                    <li class="flex items-start gap-2">
+                        <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-0.5"></i>
+                        <span>{{ habit }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- Areas for Attention -->
+            <div class="bg-slate-800/40 rounded-xl p-5 border border-slate-800/80 space-y-3">
+                <h4 class="text-xs font-semibold text-amber-400 uppercase tracking-wider flex items-center gap-2">
+                    <i data-lucide="alert-triangle" class="w-4 h-4"></i> Areas Needing Care
+                </h4>
+                <ul class="space-y-2 text-xs text-slate-300">
+                    {% for area in ai_summary.areas_for_attention %}
+                    <li class="flex items-start gap-2">
+                        <i data-lucide="alert-circle" class="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5"></i>
+                        <span>{{ area }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- Personalised Recommendations -->
+            <div class="bg-slate-800/40 rounded-xl p-5 border border-slate-800/80 space-y-3">
+                <h4 class="text-xs font-semibold text-blue-400 uppercase tracking-wider flex items-center gap-2">
+                    <i data-lucide="compass" class="w-4 h-4"></i> Recommendations
+                </h4>
+                <ul class="space-y-2 text-xs text-slate-300">
+                    {% for rec in ai_summary.recommendations %}
+                    <li class="flex items-start gap-2">
+                        <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-blue-400 flex-shrink-0 mt-0.5"></i>
+                        <span>{{ rec }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Unified Timeline -->
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-xl font-bold text-secondary">Unified Activity Timeline</h2>
+                <p class="text-xs text-slate-400">Chronological history across all wellness modules</p>
+            </div>
+            <a href="{{ url_for('wellness.stats_page') }}" class="text-xs font-semibold text-primary hover:underline">Full History &rarr;</a>
+        </div>
+
+        <div class="divide-y divide-slate-50 border-t border-slate-50">
+            {% if timeline %}
+                {% for item in timeline %}
+                <div class="py-3.5 flex items-center justify-between gap-4">
+                    <div class="flex items-center space-x-3 min-w-0">
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0
+                            {% if item.event_type == 'breathing' %}bg-blue-50 text-primary
+                            {% elif item.event_type == 'meditation' %}bg-teal-50 text-accent
+                            {% elif item.event_type == 'focus' %}bg-indigo-50 text-indigo-600
+                            {% elif item.event_type == 'sleep' %}bg-purple-50 text-purple-600
+                            {% elif item.event_type == 'music' %}bg-rose-50 text-rose-600
+                            {% elif item.event_type == 'journal' %}bg-slate-100 text-slate-700
+                            {% else %}bg-emerald-50 text-emerald-600{% endif %}">
+                            <i data-lucide="
+                                {% if item.event_type == 'breathing' %}wind
+                                {% elif item.event_type == 'meditation' %}sun
+                                {% elif item.event_type == 'focus' %}clock
+                                {% elif item.event_type == 'sleep' %}moon
+                                {% elif item.event_type == 'music' %}headphones
+                                {% elif item.event_type == 'journal' %}book-open
+                                {% else %}check-square{% endif %}"
+                               class="w-4 h-4"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <h4 class="text-sm font-semibold text-secondary truncate">{{ item.title }}</h4>
+                            <p class="text-[11px] text-slate-400 truncate">{{ item.event_type | capitalize }} &bull; {{ item.duration_summary }}</p>
+                        </div>
+                    </div>
+                    <span class="text-xs text-slate-400 font-medium flex-shrink-0">
+                        {{ item.timestamp[:16].replace('T', ' ') if item.timestamp else '' }}
+                    </span>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="py-8 text-center text-slate-400">
+                    <i data-lucide="clock" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
+                    <p class="text-xs">No activity recorded in timeline yet.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    // Placeholder chart logic for demonstration
-    const ctxMood = document.getElementById('moodChart').getContext('2d');
-    const moodChart = new Chart(ctxMood, {
+    // Safe JSON parse from backend analytics context
+    const analyticsData = {{ analytics | tojson | safe }};
+
+    const dayLabels = analyticsData.day_labels || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+    // 1. Wellness Score Chart
+    const ctxWellness = document.getElementById('wellnessChart').getContext('2d');
+    new Chart(ctxWellness, {
         type: 'line',
         data: {
-            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            labels: dayLabels,
             datasets: [{
-                label: 'Mood Rating',
-                data: [3, 4, 3, 5, 4, 5, 4],
+                label: 'Wellness Score',
+                data: analyticsData.wellness_scores || [75, 78, 80, 82, 80, 85, 80],
                 borderColor: '#2563EB',
-                backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                tension: 0.4,
-                fill: true
+                backgroundColor: 'rgba(37, 99, 235, 0.08)',
+                fill: true,
+                tension: 0.35,
+                borderWidth: 2.5,
+                pointBackgroundColor: '#2563EB',
+                pointRadius: 4
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-                y: { min: 1, max: 5 }
-            }
+                y: { min: 30, max: 100, grid: { color: '#F1F5F9' } },
+                x: { grid: { display: false } }
+            },
+            plugins: { legend: { display: false } }
         }
     });
 
-    const ctxEnergy = document.getElementById('energyChart').getContext('2d');
-    const energyChart = new Chart(ctxEnergy, {
+    // 2. Sleep Hours Chart
+    const ctxSleep = document.getElementById('sleepChart').getContext('2d');
+    new Chart(ctxSleep, {
         type: 'bar',
         data: {
-            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            labels: dayLabels,
             datasets: [{
-                label: 'Energy Level',
-                data: [4, 2, 5, 4, 3, 5, 4],
-                backgroundColor: '#14B8A6',
-                borderRadius: 6
+                label: 'Hours Slept',
+                data: analyticsData.sleep_hours || [7.0, 7.5, 8.0, 7.2, 7.8, 8.1, 7.5],
+                backgroundColor: '#9333EA',
+                borderRadius: 8,
+                maxBarThickness: 32
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-                y: { min: 1, max: 5 }
+                y: { min: 0, max: 12, grid: { color: '#F1F5F9' } },
+                x: { grid: { display: false } }
+            },
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    // 3. Mood Trend Chart
+    const moodCounts = analyticsData.mood_counts || {"Happy": 3, "Calm": 2, "Neutral": 2};
+    const ctxMood = document.getElementById('moodChart').getContext('2d');
+    new Chart(ctxMood, {
+        type: 'bar',
+        data: {
+            labels: Object.keys(moodCounts),
+            datasets: [{
+                label: 'Frequency',
+                data: Object.values(moodCounts),
+                backgroundColor: ['#10B981', '#14B8A6', '#64748B', '#F59E0B', '#EF4444', '#6366F1'],
+                borderRadius: 8,
+                maxBarThickness: 36
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { ticks: { precision: 0 }, grid: { color: '#F1F5F9' } },
+                y: { grid: { display: false } }
+            },
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    // 4. Activity Distribution Chart (Doughnut)
+    const actDist = analyticsData.activity_distribution || {"Breathing": 5, "Meditation": 3, "Focus": 4, "Sleep": 7, "Music": 3, "Journal": 2};
+    const ctxActivity = document.getElementById('activityChart').getContext('2d');
+    new Chart(ctxActivity, {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(actDist),
+            datasets: [{
+                data: Object.values(actDist),
+                backgroundColor: ['#2563EB', '#14B8A6', '#6366F1', '#9333EA', '#F43F5E', '#0F172A'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } }
+            },
+            cutout: '70%'
+        }
+    });
+
+    // 5. Mindfulness Time Chart (Stacked Bar)
+    const ctxMindfulness = document.getElementById('mindfulnessChart').getContext('2d');
+    new Chart(ctxMindfulness, {
+        type: 'bar',
+        data: {
+            labels: dayLabels,
+            datasets: [
+                {
+                    label: 'Breathing (mins)',
+                    data: analyticsData.breathing_mins || [5, 5, 10, 5, 5, 10, 5],
+                    backgroundColor: '#2563EB',
+                    borderRadius: 4
+                },
+                {
+                    label: 'Meditation (mins)',
+                    data: analyticsData.meditation_mins || [10, 15, 0, 20, 10, 15, 10],
+                    backgroundColor: '#14B8A6',
+                    borderRadius: 4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { stacked: true, grid: { display: false } },
+                y: { stacked: true, grid: { color: '#F1F5F9' } }
+            },
+            plugins: {
+                legend: { position: 'top', labels: { boxWidth: 12 } }
             }
         }
     });

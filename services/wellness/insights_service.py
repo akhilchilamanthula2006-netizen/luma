@@ -71,7 +71,74 @@ class InsightsService:
             }
 
     @staticmethod
+    def generate_weekly_ai_summary(user_id):
+        """
+        Generates structured AI Weekly Summary containing:
+        - overall_progress
+        - positive_habits
+        - areas_for_attention
+        - recommendations
+        """
+        ctx = InsightsService.get_unified_wellness_context(user_id)
+        analytics = StatisticsService.get_7day_analytics(user_id)
+        score = ctx["score"]["current"]
+        heuristics = ctx["heuristics"]
+        summary = ctx["summary"]
+
+        # Progress assessment
+        if score >= 80:
+            overall_progress = "Outstanding momentum! Your wellness markers, sleep quality, and active streak demonstrate strong emotional equilibrium."
+        elif score >= 65:
+            overall_progress = "Steady and stable progress over the last 7 days. Continuing small daily habits will further strengthen your energy levels."
+        else:
+            overall_progress = "Your wellness balance is recovering. Focusing on rest and short stress-relief exercises will help rebuild your vitality."
+
+        # Positive habits identified
+        positive_habits = []
+        if summary.get("sleep_hours", 7.5) >= 7.0:
+            positive_habits.append(f"Maintained optimal sleep duration ({summary.get('sleep_hours', 7.5)} hrs/night)")
+        if summary.get("streak_count", 1) >= 2:
+            positive_habits.append(f"Active wellness habit streak ({summary.get('streak_count', 1)} days)")
+        if analytics["activity_distribution"]["Breathing"] + analytics["activity_distribution"]["Meditation"] > 0:
+            positive_habits.append("Consistent mindfulness practice (breathing & meditation)")
+        if analytics["activity_distribution"]["Journal"] > 0:
+            positive_habits.append("Regular emotional check-ins via Reflection Journal")
+        if not positive_habits:
+            positive_habits.append("Initiated daily wellness tracking and self-awareness check-ins")
+
+        # Areas needing attention
+        areas_for_attention = []
+        if "LOW_SLEEP_WARNING" in heuristics:
+            areas_for_attention.append("Sleep latency & duration fell below the recommended 7-hour threshold")
+        if "ELEVATED_STRESS" in heuristics:
+            areas_for_attention.append("Recent mood logs indicated elevated stress or anxiety levels")
+        if "HIGH_WORK_NO_REST" in heuristics:
+            areas_for_attention.append("Extended focus work blocks completed without taking micro-rest breaks")
+        if analytics["activity_distribution"]["Breathing"] == 0:
+            areas_for_attention.append("Box breathing and parasympathetic nerve regulation exercises underutilized")
+        if not areas_for_attention:
+            areas_for_attention.append("Maintain current sleep cadence and avoid late-night screen time")
+
+        # Personalised recommendations
+        recommendations = []
+        if "LOW_SLEEP_WARNING" in heuristics:
+            recommendations.append("Log a 4-7-8 Relaxing Breath session 30 minutes before bedtime to lower heart rate.")
+        if "HIGH_WORK_NO_REST" in heuristics:
+            recommendations.append("Pair 50-minute Pomodoro focus blocks with 5-minute calm ambient soundscapes.")
+        if score < 75:
+            recommendations.append("Set aside 5 minutes each morning for a guided meditation session.")
+        recommendations.append("Keep logging your daily mood check-ins to track long-term emotional patterns.")
+
+        return {
+            "overall_progress": overall_progress,
+            "positive_habits": positive_habits,
+            "areas_for_attention": areas_for_attention,
+            "recommendations": recommendations
+        }
+
+    @staticmethod
     def log_recommendation_feedback(user_id, recommendation_id, recommendation_type, accepted=False, dismissed=False, helpful=False, not_helpful=False):
+
         db = MongoService.get_db()
         fb = RecommendationFeedbackModel(
             user_id=user_id,

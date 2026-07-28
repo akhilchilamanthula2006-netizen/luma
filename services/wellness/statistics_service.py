@@ -137,3 +137,127 @@ class StatisticsService:
         timeline.sort(key=lambda x: x["timestamp"], reverse=True)
         return timeline[:limit]
 
+    @staticmethod
+    def get_7day_analytics(user_id):
+        """
+        Computes 7-day time series data, activity distributions, and mood counts
+        for Analytics charts and summary metrics.
+        """
+        db = MongoService.get_db()
+        uid = ObjectId(user_id)
+
+        now = datetime.now()
+        dates = [(now - timedelta(days=i)) for i in range(6, -1, -1)]
+        day_labels = [d.strftime("%a") for d in dates]
+        date_strs = [d.strftime("%Y-%m-%d") for d in dates]
+
+        wellness_scores = []
+        sleep_hours = []
+        meditation_mins = []
+        breathing_mins = []
+        focus_mins = []
+
+        for d_str in date_strs:
+            # Daily summary doc if stored
+            sum_doc = db.wellness_daily_summaries.find_one({"user_id": uid, "date": d_str})
+            
+            # Sleep hours
+            s_doc = db.sleep_logs.find_one({"user_id": uid, "sleep_date": d_str})
+            if not s_doc:
+                # Fallback check by created_at date
+                s_doc = db.sleep_logs.find_one({
+                    "user_id": uid,
+                    "created_at": {"$gte": datetime.strptime(d_str, "%Y-%m-%d"), "$lt": datetime.strptime(d_str, "%Y-%m-%d") + timedelta(days=1)}
+                })
+            s_hrs = s_doc.get("hours_slept", 7.5) if s_doc else (sum_doc.get("sleep_hours", 7.5) if sum_doc else 7.5)
+            sleep_hours.append(round(s_hrs, 1))
+
+            # Breathing mins
+            b_docs = list(db.breathing_sessions.find({
+                "user_id": uid,
+                "created_at": {"$gte": datetime.strptime(d_str, "%Y-%m-%d"), "$lt": datetime.strptime(d_str, "%Y-%m-%d") + timedelta(days=1)}
+            }))
+            b_m = sum(b.get("duration_seconds", 0) for b in b_docs) // 60
+            breathing_mins.append(b_m)
+
+            # Meditation mins
+            m_docs = list(db.meditation_sessions.find({
+                "user_id": uid,
+                "created_at": {"$gte": datetime.strptime(d_str, "%Y-%m-%d"), "$lt": datetime.strptime(d_str, "%Y-%m-%d") + timedelta(days=1)}
+            }))
+            m_m = sum(m.get("duration_minutes", 10) for m in m_docs)
+            meditation_mins.append(m_m)
+
+            # Focus mins
+            f_docs = list(db.focus_sessions.find({
+                "user_id": uid,
+                "created_at": {"$gte": datetime.strptime(d_str, "%Y-%m-%d"), "$lt": datetime.strptime(d_str, "%Y-%m-%d") + timedelta(days=1)}
+            }))
+            f_m = sum(f.get("total_focus_seconds", 0) for f in f_docs) // 60
+            focus_mins.append(f_m)
+
+            # Score calculation estimate for each day
+            base_score = 70
+            if s_hrs >= 7.0: base_score += 15
+            elif s_hrs >= 6.0: base_score += 5
+            if (b_m + m_m + f_m) > 0: base_score += 10
+            wellness_scores.append(min(100, max(40, base_score)))
+
+        # 7-day date threshold for aggregates
+        seven_days_ago = now - timedelta(days=7)
+
+        # Mood trend frequency over past 7 days
+        mood_counts = {"Happy": 0, "Calm": 0, "Neutral": 0, "Stressed": 0, "Anxious": 0, "Sad": 0}
+        mood_cursor = db.mood_logs.find({"user_id": uid, "timestamp": {"$gte": seven_days_ago}})
+        for m in mood_cursor:
+            lbl = m.get("mood_label") or m.get("mood")
+            if lbl in mood_counts:
+                mood_counts[lbl] += 1
+
+        # Also count moods from journal entries
+        j_cursor = db.journal_entries.find({"user_id": uid, "created_at": {"$gte": seven_days_ago}, "is_deleted": {"$ne": True}})
+        for j in j_cursor:
+            es = j.get("emotion_snapshot") or {}
+            pm = es.get("primary_mood")
+            if pm in mood_counts:
+                mood_counts[pm] += 1
+
+        # Fallback if no moods logged yet
+        if sum(mood_counts.values()) == 0:
+            mood_counts["Calm"] = 2
+            mood_counts["Happy"] = 2
+            mood_counts["Neutral"] = 1
+
+        # Activity Distribution over past 7 days
+        b_count = db.breathing_sessions.count_documents({"user_id": uid, "created_at": {"$gte": seven_days_ago}})
+        m_count = db.meditation_sessions.count_documents({"user_id": uid, "created_at": {"$gte": seven_days_ago}})
+        f_count = db.focus_sessions.count_documents({"user_id": uid, "created_at": {"$gte": seven_days_ago}})
+        s_count = db.sleep_logs.count_documents({"user_id": uid, "created_at": {"$gte": seven_days_ago}})
+        mus_count = db.music_listening_history.count_documents({"user_id": uid, "started_at": {"$gte": seven_days_ago}})
+        j_count = db.journal_entries.count_documents({"user_id": uid, "created_at": {"$gte": seven_days_ago}, "is_deleted": {"$ne": True}})
+        act_logs_count = db.activity_logs.count_documents({"user_id": uid, "created_at": {"$gte": seven_days_ago}})
+
+        activity_distribution = {
+            "Breathing": b_count,
+            "Meditation": m_count,
+            "Focus": f_count,
+            "Sleep": s_count,
+            "Music": mus_count,
+            "Journal": j_count
+        }
+
+        total_weekly_activities = b_count + m_count + f_count + s_count + mus_count + j_count + act_logs_count
+
+        return {
+            "day_labels": day_labels,
+            "wellness_scores": wellness_scores,
+            "sleep_hours": sleep_hours,
+            "meditation_mins": meditation_mins,
+            "breathing_mins": breathing_mins,
+            "focus_mins": focus_mins,
+            "mood_counts": mood_counts,
+            "activity_distribution": activity_distribution,
+            "total_weekly_activities": total_weekly_activities
+        }
+
+
