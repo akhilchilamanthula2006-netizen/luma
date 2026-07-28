@@ -81,9 +81,31 @@ class InsightsService:
         """
         ctx = InsightsService.get_unified_wellness_context(user_id)
         analytics = StatisticsService.get_7day_analytics(user_id)
+
+        # If user has zero real history, return realistic demo summary
+        if analytics.get("is_demo"):
+            return {
+                "is_demo": True,
+                "overall_progress": "Wellness score is improving steadily (72 → 85). Sleep duration and consistency have increased over the week.",
+                "positive_habits": [
+                    "Maintained 7.5+ hour sleep pattern on most nights",
+                    "Active 4-day wellness habit streak",
+                    "Consistent 4-7-8 breathing and calm soundscape sessions"
+                ],
+                "areas_for_attention": [
+                    "Mid-week stress spike detected during extended work hours",
+                    "Recommend adding a 5-minute break between long focus blocks"
+                ],
+                "recommendations": [
+                    "Continue daily 4-7-8 breathing exercises to lower stress.",
+                    "Maintain consistent 10:30 PM bedtime to stabilize sleep scores."
+                ]
+            }
+
         score = ctx["score"]["current"]
         heuristics = ctx["heuristics"]
         summary = ctx["summary"]
+
 
         # Progress assessment
         if score >= 80:

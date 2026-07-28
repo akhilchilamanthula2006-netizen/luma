@@ -237,6 +237,30 @@ class StatisticsService:
         j_count = db.journal_entries.count_documents({"user_id": uid, "created_at": {"$gte": seven_days_ago}, "is_deleted": {"$ne": True}})
         act_logs_count = db.activity_logs.count_documents({"user_id": uid, "created_at": {"$gte": seven_days_ago}})
 
+        total_weekly_activities = b_count + m_count + f_count + s_count + mus_count + j_count + act_logs_count
+
+        # If user has zero real analytics history, generate in-memory realistic DEMO DATA
+        if total_weekly_activities == 0:
+            return {
+                "is_demo": True,
+                "day_labels": day_labels,
+                "wellness_scores": [72, 74, 76, 75, 80, 82, 85],
+                "sleep_hours": [6.5, 7.2, 7.8, 6.9, 8.1, 7.5, 8.0],
+                "meditation_mins": [10, 15, 0, 20, 10, 15, 10],
+                "breathing_mins": [5, 5, 10, 5, 5, 10, 5],
+                "focus_mins": [25, 50, 25, 50, 25, 50, 25],
+                "mood_counts": {"Happy": 3, "Calm": 2, "Neutral": 1, "Stressed": 1},
+                "activity_distribution": {
+                    "Breathing": 5,
+                    "Meditation": 3,
+                    "Focus": 4,
+                    "Sleep": 7,
+                    "Music": 3,
+                    "Journal": 2
+                },
+                "total_weekly_activities": 24
+            }
+
         activity_distribution = {
             "Breathing": b_count,
             "Meditation": m_count,
@@ -246,9 +270,8 @@ class StatisticsService:
             "Journal": j_count
         }
 
-        total_weekly_activities = b_count + m_count + f_count + s_count + mus_count + j_count + act_logs_count
-
         return {
+            "is_demo": False,
             "day_labels": day_labels,
             "wellness_scores": wellness_scores,
             "sleep_hours": sleep_hours,
@@ -259,5 +282,6 @@ class StatisticsService:
             "activity_distribution": activity_distribution,
             "total_weekly_activities": total_weekly_activities
         }
+
 
 

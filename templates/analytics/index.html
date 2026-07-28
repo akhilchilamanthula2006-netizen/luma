@@ -14,7 +14,15 @@
     <!-- Header Section -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-            <h1 class="text-3xl font-bold tracking-tight text-secondary">Analytics & Progress</h1>
+            <div class="flex items-center gap-3">
+                <h1 class="text-3xl font-bold tracking-tight text-secondary">Analytics & Progress</h1>
+                {% if analytics and analytics.is_demo %}
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 shadow-sm" title="Demonstration data displayed because no real analytics have been logged yet.">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-500"></i>
+                    <span>Demo Analytics</span>
+                </span>
+                {% endif %}
+            </div>
             <p class="text-slate-500 mt-1">Track your 7-day emotional trends, sleep quality, habit metrics, and AI wellness insights.</p>
         </div>
         <div class="flex items-center space-x-3">
@@ -26,6 +34,7 @@
             </a>
         </div>
     </div>
+
 
     <!-- 1. Summary Cards Grid (4 Cards) -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
