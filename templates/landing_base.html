@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
+    <!-- ① Anti-flicker: restore theme class before first paint -->
+    <script>(function(){try{var t=localStorage.getItem('luma-theme');if(t==='dark'||(t===null&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Luma — AI Mental Wellness Companion{% endblock %}</title>
@@ -27,6 +29,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
@@ -102,6 +105,14 @@
 
             <!-- Desktop auth buttons -->
             <div class="hidden md:flex items-center gap-3">
+                <button type="button"
+                        onclick="toggleTheme()"
+                        class="luma-theme-toggle p-2 rounded-xl text-luma-text-sec hover:text-luma-text hover:bg-white/5 transition focus:outline-none"
+                        aria-label="Toggle Theme"
+                        title="Toggle Theme">
+                    <i data-lucide="sun" class="theme-icon-sun w-5 h-5 hidden text-amber-400"></i>
+                    <i data-lucide="moon" class="theme-icon-moon w-5 h-5 text-indigo-400"></i>
+                </button>
                 <a href="{{ url_for('auth.login') }}"
                    class="text-sm font-medium text-luma-text-sec hover:text-luma-text px-3 py-2 rounded-lg hover:bg-white/5 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-luma-accent">
                     Login
