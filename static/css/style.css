@@ -1,27 +1,372 @@
-/* Luma Custom Styles */
+/* ============================================================
+   LUMA — Global Style System
+   Milestone 11.1: UI Consistency & Branding Polish
+   ============================================================ */
 
-/* Smooth scroll behaviors */
+/* ── 1. Base & Typography ── */
 html {
     scroll-behavior: smooth;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-/* Glassmorphism utility */
+body {
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+}
+
+/* Tighten heading tracking globally */
+h1, h2, h3, h4, h5 {
+    letter-spacing: -0.02em;
+}
+
+/* ── 2. CSS Custom Properties (Design Tokens) ── */
+:root {
+    --luma-primary:      #2563EB;
+    --luma-primary-h:    #1d4ed8;
+    --luma-accent:       #5dd8d0;
+    --luma-accent-soft:  rgba(93, 216, 208, 0.12);
+    --luma-indigo:       #818cf8;
+    --luma-secondary:    #0F172A;
+    --luma-surface:      #ffffff;
+    --luma-bg:           #F8FAFC;
+    --luma-border:       #e2e8f0;
+    --luma-border-soft:  #f1f5f9;
+
+    --shadow-xs:  0 1px 2px 0 rgba(15,23,42,0.04);
+    --shadow-sm:  0 1px 3px 0 rgba(15,23,42,0.07), 0 1px 2px -1px rgba(15,23,42,0.04);
+    --shadow-md:  0 4px 6px -1px rgba(15,23,42,0.08), 0 2px 4px -2px rgba(15,23,42,0.04);
+    --shadow-lg:  0 10px 15px -3px rgba(15,23,42,0.08), 0 4px 6px -4px rgba(15,23,42,0.04);
+    --shadow-xl:  0 20px 25px -5px rgba(15,23,42,0.08), 0 8px 10px -6px rgba(15,23,42,0.04);
+    --shadow-pri: 0 4px 14px 0 rgba(37,99,235,0.22);
+    --shadow-acc: 0 4px 14px 0 rgba(93,216,208,0.25);
+
+    --radius-sm:  10px;
+    --radius-md:  14px;
+    --radius-lg:  18px;
+    --radius-xl:  22px;
+    --radius-full: 9999px;
+
+    --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
+    --duration-fast: 120ms;
+    --duration-base: 200ms;
+    --duration-slow: 320ms;
+}
+
+/* ── 3. Scrollbar Styling ── */
+/* Thin webkit scrollbar — app palette */
+::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+
+/* ── 4. Focus Visible (accessibility-first focus rings) ── */
+:focus-visible {
+    outline: 2px solid var(--luma-primary);
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* ── 5. Button Micro-animations ── */
+/* Primary buttons */
+.btn-primary,
+button[type="submit"],
+a.luma-btn-primary {
+    transition:
+        background-color var(--duration-base) var(--ease-out),
+        box-shadow var(--duration-base) var(--ease-out),
+        transform var(--duration-fast) var(--ease-out);
+}
+
+button[type="submit"]:hover,
+a.luma-btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-pri);
+}
+
+button[type="submit"]:active,
+a.luma-btn-primary:active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: none;
+    transition-duration: 80ms;
+}
+
+/* All clickable elements with bg-primary Tailwind class */
+[class*="bg-primary"]:not([class*="bg-primary/"]):not(div):not(span):not(p):not(nav):not(aside):not(header):not(footer):not(section):not(main) {
+    transition:
+        background-color var(--duration-base) var(--ease-out),
+        box-shadow var(--duration-base) var(--ease-out),
+        transform var(--duration-fast) var(--ease-spring);
+}
+
+/* Generic link-buttons hover lift */
+a[class*="px-"][class*="py-"][class*="rounded"] {
+    transition:
+        background-color var(--duration-base) var(--ease-out),
+        color var(--duration-base) var(--ease-out),
+        box-shadow var(--duration-base) var(--ease-out),
+        transform var(--duration-fast) var(--ease-out),
+        border-color var(--duration-base) var(--ease-out);
+}
+
+/* ── 6. Card Hover Effects ── */
+.luma-card {
+    background: var(--luma-surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--luma-border-soft);
+    box-shadow: var(--shadow-sm);
+    transition:
+        box-shadow var(--duration-slow) var(--ease-out),
+        transform var(--duration-slow) var(--ease-out),
+        border-color var(--duration-slow) var(--ease-out);
+}
+.luma-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+    border-color: var(--luma-border);
+}
+
+/* Dashboard / analytics cards lift */
+.bg-white.rounded-2xl {
+    transition:
+        box-shadow var(--duration-slow) var(--ease-out),
+        transform var(--duration-slow) var(--ease-out);
+}
+.bg-white.rounded-2xl:hover {
+    box-shadow: var(--shadow-md);
+}
+
+/* ── 7. Input Fields — Premium Focus ── */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+input[type="number"],
+input[type="tel"],
+input[type="url"],
+textarea,
+select {
+    transition:
+        border-color var(--duration-base) var(--ease-out),
+        box-shadow var(--duration-base) var(--ease-out),
+        background-color var(--duration-base) var(--ease-out);
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="search"]:focus,
+input[type="number"]:focus,
+input[type="tel"]:focus,
+input[type="url"]:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: var(--luma-primary) !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
+}
+
+/* ── 8. Sidebar Active State Enhancement ── */
+#app-sidebar a[aria-current="page"] {
+    position: relative;
+    font-weight: 600;
+}
+#app-sidebar a[aria-current="page"]::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 20%;
+    height: 60%;
+    width: 3px;
+    background: linear-gradient(to bottom, #5dd8d0, #818cf8);
+    border-radius: 0 3px 3px 0;
+}
+
+/* Sidebar nav link transitions */
+#app-sidebar a {
+    transition:
+        background-color var(--duration-base) var(--ease-out),
+        color var(--duration-base) var(--ease-out),
+        transform var(--duration-fast) var(--ease-out);
+}
+#app-sidebar a:hover:not([aria-current="page"]) {
+    transform: translateX(2px);
+}
+
+/* ── 9. Logo Mark Animations ── */
+.luma-logo-mark {
+    transition: transform var(--duration-slow) var(--ease-spring);
+}
+.luma-logo-mark:hover {
+    transform: scale(1.08);
+}
+
+/* ── 10. Glassmorphism Utility ── */
 .glass {
     background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.35);
+}
+.glass-dark {
+    background: rgba(8, 13, 26, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.06);
 }
 
-/* Custom animations */
+/* ── 11. Keyframe Animations ── */
 @keyframes float {
-    0%, 100% {
-        transform: translateY(0px);
-    }
-    50% {
-        transform: translateY(-10px);
-    }
+    0%, 100% { transform: translateY(0px); }
+    50%       { transform: translateY(-10px); }
 }
-
 .animate-float {
     animation: float 6s ease-in-out infinite;
+}
+
+@keyframes fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.animate-fade-up {
+    animation: fade-up 0.45s var(--ease-out) both;
+}
+
+@keyframes fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+.animate-fade-in {
+    animation: fade-in 0.3s var(--ease-out) both;
+}
+
+@keyframes glow-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(93, 216, 208, 0); }
+    50%       { box-shadow: 0 0 0 6px rgba(93, 216, 208, 0.18); }
+}
+.animate-glow-pulse {
+    animation: glow-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    0%   { background-position: -200% 0; }
+    100% { background-position:  200% 0; }
+}
+.animate-shimmer {
+    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes scale-in {
+    from { opacity: 0; transform: scale(0.94); }
+    to   { opacity: 1; transform: scale(1); }
+}
+.animate-scale-in {
+    animation: scale-in 0.2s var(--ease-spring) both;
+}
+
+/* ── 12. Flash Message Polish ── */
+[class*="bg-emerald-50"],
+[class*="bg-rose-50"],
+[class*="bg-blue-50"] {
+    border-radius: var(--radius-sm) !important;
+}
+
+/* ── 13. Modal / Overlay Transitions ── */
+.modal-enter {
+    animation: scale-in 0.22s var(--ease-spring) both;
+}
+
+/* ── 14. Tag / Badge Polish ── */
+[class*="rounded-full"][class*="px-2"] {
+    transition: background-color var(--duration-base) var(--ease-out);
+}
+
+/* ── 15. Topbar / Header Refinements ── */
+#app-sidebar {
+    transition: width var(--duration-slow) var(--ease-smooth);
+}
+
+/* ── 16. Selection Color ── */
+::selection {
+    background: rgba(37, 99, 235, 0.15);
+    color: #0F172A;
+}
+
+/* ── 17. Image Rendering ── */
+img, svg {
+    display: block;
+    max-width: 100%;
+}
+
+/* ── 18. Reveal Animation (scroll-triggered via JS) ── */
+[data-reveal] {
+    opacity: 0;
+    transform: translateY(20px);
+    transition:
+        opacity 0.5s var(--ease-out),
+        transform 0.5s var(--ease-out);
+}
+[data-reveal].is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ── 19. Luma Sidebar Logo ── */
+.luma-sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+}
+.luma-sidebar-logo svg {
+    flex-shrink: 0;
+    transition: transform var(--duration-slow) var(--ease-spring);
+}
+.luma-sidebar-logo:hover svg {
+    transform: scale(1.1) rotate(-4deg);
+}
+.luma-sidebar-logo .wordmark {
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: -0.035em;
+    color: #0F172A;
+    transition: color var(--duration-base) var(--ease-out);
+}
+
+/* ── 20. Auth Card Polish ── */
+.luma-auth-card {
+    background: #ffffff;
+    border-radius: var(--radius-xl);
+    border: 1px solid #e8edf5;
+    box-shadow: 0 8px 32px -4px rgba(15,23,42,0.10), 0 0 0 1px rgba(15,23,42,0.02);
+    padding: 2.5rem;
 }

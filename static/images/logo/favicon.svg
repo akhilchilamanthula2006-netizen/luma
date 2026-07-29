@@ -1,0 +1,18 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="fg" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5dd8d0"/>
+      <stop offset="1" stop-color="#818cf8"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded background square (for favicon clarity at small sizes) -->
+  <rect width="32" height="32" rx="7" fill="#080d1a"/>
+  <!-- Icon mark — scaled down to fit with background -->
+  <line x1="16" y1="7"  x2="9"  y2="19" stroke="url(#fg)" stroke-width="1.1" stroke-opacity="0.45" stroke-linecap="round"/>
+  <line x1="16" y1="7"  x2="23" y2="19" stroke="url(#fg)" stroke-width="1.1" stroke-opacity="0.45" stroke-linecap="round"/>
+  <line x1="9"  y1="19" x2="23" y2="19" stroke="url(#fg)" stroke-width="1.1" stroke-opacity="0.45" stroke-linecap="round"/>
+  <path d="M 5.5 26 Q 16 18.5 26.5 26" stroke="url(#fg)" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <circle cx="16" cy="7"  r="2.6" fill="url(#fg)"/>
+  <circle cx="9"  cy="19" r="1.7" fill="url(#fg)" fill-opacity="0.75"/>
+  <circle cx="23" cy="19" r="1.7" fill="url(#fg)" fill-opacity="0.75"/>
+</svg>

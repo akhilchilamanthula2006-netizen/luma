@@ -1,0 +1,22 @@
+<svg width="140" height="40" viewBox="0 0 140 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Luma">
+  <defs>
+    <linearGradient id="g-full" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5dd8d0"/>
+      <stop offset="1" stop-color="#818cf8"/>
+    </linearGradient>
+    <filter id="glow-full" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="1.2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <!-- Icon mark (left side, 40x40) -->
+  <line x1="20" y1="9"  x2="11" y2="24" stroke="url(#g-full)" stroke-width="1.2" stroke-opacity="0.35" stroke-linecap="round"/>
+  <line x1="20" y1="9"  x2="29" y2="24" stroke="url(#g-full)" stroke-width="1.2" stroke-opacity="0.35" stroke-linecap="round"/>
+  <line x1="11" y1="24" x2="29" y2="24" stroke="url(#g-full)" stroke-width="1.2" stroke-opacity="0.35" stroke-linecap="round"/>
+  <path d="M 7 32 Q 20 21 33 32" stroke="url(#g-full)" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+  <circle cx="20" cy="9"  r="3.2" fill="url(#g-full)" filter="url(#glow-full)"/>
+  <circle cx="11" cy="24" r="2.1" fill="url(#g-full)" fill-opacity="0.72"/>
+  <circle cx="29" cy="24" r="2.1" fill="url(#g-full)" fill-opacity="0.72"/>
+  <!-- Wordmark "Luma" — dark for light backgrounds -->
+  <text x="48" y="27" font-family="Inter, system-ui, sans-serif" font-size="20" font-weight="700" letter-spacing="-0.5" fill="#0F172A">Luma</text>
+</svg>

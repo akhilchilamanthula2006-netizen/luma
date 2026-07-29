@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Luma - Mental Wellness Companion{% endblock %}</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/logo/favicon.svg') }}" type="image/svg+xml">
     <meta name="description" content="Luma is your AI-powered mental wellness companion that helps you reflect, understand emotions, and build healthier habits.">
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -49,11 +50,24 @@
 
         <!-- Logo -->
         <div class="h-16 flex items-center px-5 border-b border-slate-100 flex-shrink-0">
-            <a href="{{ url_for('dashboard.index') }}" class="flex items-center space-x-2">
-                <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white shadow-md shadow-primary/20">
-                    <i data-lucide="sparkles" class="w-4 h-4"></i>
-                </div>
-                <span class="text-xl font-bold tracking-tight text-secondary sidebar-label">Luma</span>
+            <a href="{{ url_for('dashboard.index') }}" class="luma-sidebar-logo" aria-label="Luma — Go to Dashboard">
+                <!-- Luma Icon Mark -->
+                <svg width="30" height="30" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                    <defs>
+                        <linearGradient id="sb-g" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#5dd8d0"/>
+                            <stop offset="1" stop-color="#818cf8"/>
+                        </linearGradient>
+                    </defs>
+                    <line x1="20" y1="9"  x2="11" y2="24" stroke="url(#sb-g)" stroke-width="1.3" stroke-opacity="0.38" stroke-linecap="round"/>
+                    <line x1="20" y1="9"  x2="29" y2="24" stroke="url(#sb-g)" stroke-width="1.3" stroke-opacity="0.38" stroke-linecap="round"/>
+                    <line x1="11" y1="24" x2="29" y2="24" stroke="url(#sb-g)" stroke-width="1.3" stroke-opacity="0.38" stroke-linecap="round"/>
+                    <path d="M 7 32 Q 20 21 33 32" stroke="url(#sb-g)" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+                    <circle cx="20" cy="9"  r="3.2" fill="url(#sb-g)"/>
+                    <circle cx="11" cy="24" r="2.1" fill="url(#sb-g)" fill-opacity="0.72"/>
+                    <circle cx="29" cy="24" r="2.1" fill="url(#sb-g)" fill-opacity="0.72"/>
+                </svg>
+                <span class="wordmark sidebar-label">Luma</span>
             </a>
         </div>
 
@@ -131,9 +145,10 @@
 
         <!-- User Profile Card -->
         <div class="px-3 py-4 border-t border-slate-100 sidebar-label">
-            <div class="flex items-center space-x-3 px-3 py-3 bg-slate-50 rounded-xl">
-                <!-- Avatar -->
-                <div class="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm flex-shrink-0">
+            <div class="flex items-center space-x-3 px-3 py-3 bg-slate-50/80 rounded-xl border border-slate-100">
+                <!-- Avatar with gradient ring -->
+                <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 ring-2"
+                     style="background: linear-gradient(135deg, rgba(93,216,208,0.15), rgba(129,140,248,0.15)); color: #5dd8d0; ring-color: rgba(93,216,208,0.25);">
                     {{ username[0].upper() if username else 'U' }}
                 </div>
                 <!-- Details -->
@@ -167,7 +182,8 @@
             <div class="flex items-center space-x-3">
                 <span class="text-sm text-slate-500 hidden sm:block">{{ username }}</span>
                 <a href="{{ url_for('profile.index') }}"
-                   class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm hover:bg-primary/20 transition"
+                   class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition ring-2 ring-offset-1"
+                   style="background: linear-gradient(135deg, rgba(93,216,208,0.18) 0%, rgba(129,140,248,0.18) 100%); color: #5dd8d0; ring-color: rgba(93,216,208,0.3);"
                    title="My Profile">
                     {{ username[0].upper() if username else 'U' }}
                 </a>

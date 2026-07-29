@@ -1,0 +1,22 @@
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Luma icon">
+  <defs>
+    <linearGradient id="g1" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5dd8d0"/>
+      <stop offset="1" stop-color="#818cf8"/>
+    </linearGradient>
+    <filter id="glow1" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <!-- Neural connection lines -->
+  <line x1="20" y1="9"  x2="11" y2="24" stroke="url(#g1)" stroke-width="1.2" stroke-opacity="0.35" stroke-linecap="round"/>
+  <line x1="20" y1="9"  x2="29" y2="24" stroke="url(#g1)" stroke-width="1.2" stroke-opacity="0.35" stroke-linecap="round"/>
+  <line x1="11" y1="24" x2="29" y2="24" stroke="url(#g1)" stroke-width="1.2" stroke-opacity="0.35" stroke-linecap="round"/>
+  <!-- Horizon arc — calm / hope / light -->
+  <path d="M 7 32 Q 20 21 33 32" stroke="url(#g1)" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+  <!-- Neural nodes -->
+  <circle cx="20" cy="9"  r="3.2" fill="url(#g1)" filter="url(#glow1)"/>
+  <circle cx="11" cy="24" r="2.1" fill="url(#g1)" fill-opacity="0.72"/>
+  <circle cx="29" cy="24" r="2.1" fill="url(#g1)" fill-opacity="0.72"/>
+</svg>

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Luma - Mental Wellness Companion{% endblock %}</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/logo/favicon.svg') }}" type="image/svg+xml">
     <meta name="description" content="Luma is your AI-powered mental wellness companion that helps you reflect, understand emotions, and build healthier habits.">
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -41,11 +42,23 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
                 <div class="flex items-center space-x-2">
-                    <a href="{% if is_authenticated %}{{ url_for('dashboard.index') }}{% else %}{{ url_for('home') }}{% endif %}" class="flex items-center space-x-2">
-                        <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white shadow-md shadow-primary/20">
-                            <i data-lucide="sparkles" class="w-4 h-4"></i>
-                        </div>
-                        <span class="text-xl font-bold tracking-tight text-secondary">Luma</span>
+                    <a href="{% if is_authenticated %}{{ url_for('dashboard.index') }}{% else %}{{ url_for('home') }}{% endif %}" class="luma-sidebar-logo" aria-label="Luma">
+                        <svg width="28" height="28" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                            <defs>
+                                <linearGradient id="base-nav-g" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="#5dd8d0"/>
+                                    <stop offset="1" stop-color="#818cf8"/>
+                                </linearGradient>
+                            </defs>
+                            <line x1="20" y1="9"  x2="11" y2="24" stroke="url(#base-nav-g)" stroke-width="1.3" stroke-opacity="0.38" stroke-linecap="round"/>
+                            <line x1="20" y1="9"  x2="29" y2="24" stroke="url(#base-nav-g)" stroke-width="1.3" stroke-opacity="0.38" stroke-linecap="round"/>
+                            <line x1="11" y1="24" x2="29" y2="24" stroke="url(#base-nav-g)" stroke-width="1.3" stroke-opacity="0.38" stroke-linecap="round"/>
+                            <path d="M 7 32 Q 20 21 33 32" stroke="url(#base-nav-g)" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+                            <circle cx="20" cy="9"  r="3.2" fill="url(#base-nav-g)"/>
+                            <circle cx="11" cy="24" r="2.1" fill="url(#base-nav-g)" fill-opacity="0.72"/>
+                            <circle cx="29" cy="24" r="2.1" fill="url(#base-nav-g)" fill-opacity="0.72"/>
+                        </svg>
+                        <span class="wordmark">Luma</span>
                     </a>
                 </div>
                 
@@ -122,10 +135,24 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0">
                 <div class="flex items-center space-x-2">
-                    <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white shadow-sm">
-                        <i data-lucide="sparkles" class="w-4 h-4"></i>
-                    </div>
-                    <span class="text-lg font-bold tracking-tight text-secondary">Luma</span>
+                    <a href="{{ url_for('home') }}" class="luma-sidebar-logo" aria-label="Luma">
+                        <svg width="26" height="26" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                            <defs>
+                                <linearGradient id="base-ft-g" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="#5dd8d0"/>
+                                    <stop offset="1" stop-color="#818cf8"/>
+                                </linearGradient>
+                            </defs>
+                            <line x1="20" y1="9"  x2="11" y2="24" stroke="url(#base-ft-g)" stroke-width="1.3" stroke-opacity="0.38" stroke-linecap="round"/>
+                            <line x1="20" y1="9"  x2="29" y2="24" stroke="url(#base-ft-g)" stroke-width="1.3" stroke-opacity="0.38" stroke-linecap="round"/>
+                            <line x1="11" y1="24" x2="29" y2="24" stroke="url(#base-ft-g)" stroke-width="1.3" stroke-opacity="0.38" stroke-linecap="round"/>
+                            <path d="M 7 32 Q 20 21 33 32" stroke="url(#base-ft-g)" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+                            <circle cx="20" cy="9"  r="3.2" fill="url(#base-ft-g)"/>
+                            <circle cx="11" cy="24" r="2.1" fill="url(#base-ft-g)" fill-opacity="0.72"/>
+                            <circle cx="29" cy="24" r="2.1" fill="url(#base-ft-g)" fill-opacity="0.72"/>
+                        </svg>
+                        <span class="wordmark">Luma</span>
+                    </a>
                 </div>
                 <p class="text-slate-400 text-sm">&copy; 2026 Luma. Listening Beyond Words, Caring Beyond Boundaries.</p>
                 <div class="flex space-x-6 text-sm">
