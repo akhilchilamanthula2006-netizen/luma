@@ -82,24 +82,14 @@ class InsightsService:
         ctx = InsightsService.get_unified_wellness_context(user_id)
         analytics = StatisticsService.get_7day_analytics(user_id)
 
-        # If user has zero real history, return realistic demo summary
-        if analytics.get("is_demo"):
+        # If user has zero real history, return empty state structure
+        if not analytics.get("has_data"):
             return {
-                "is_demo": True,
-                "overall_progress": "Wellness score is improving steadily (72 → 85). Sleep duration and consistency have increased over the week.",
-                "positive_habits": [
-                    "Maintained 7.5+ hour sleep pattern on most nights",
-                    "Active 4-day wellness habit streak",
-                    "Consistent 4-7-8 breathing and calm soundscape sessions"
-                ],
-                "areas_for_attention": [
-                    "Mid-week stress spike detected during extended work hours",
-                    "Recommend adding a 5-minute break between long focus blocks"
-                ],
-                "recommendations": [
-                    "Continue daily 4-7-8 breathing exercises to lower stress.",
-                    "Maintain consistent 10:30 PM bedtime to stabilize sleep scores."
-                ]
+                "has_data": False,
+                "overall_progress": "",
+                "positive_habits": [],
+                "areas_for_attention": [],
+                "recommendations": []
             }
 
         score = ctx["score"]["current"]
@@ -121,9 +111,10 @@ class InsightsService:
             positive_habits.append(f"Maintained optimal sleep duration ({summary.get('sleep_hours', 7.5)} hrs/night)")
         if summary.get("streak_count", 1) >= 2:
             positive_habits.append(f"Active wellness habit streak ({summary.get('streak_count', 1)} days)")
-        if analytics["activity_distribution"]["Breathing"] + analytics["activity_distribution"]["Meditation"] > 0:
+        dist = analytics.get("activity_distribution", {})
+        if dist.get("Breathing", 0) + dist.get("Meditation", 0) > 0:
             positive_habits.append("Consistent mindfulness practice (breathing & meditation)")
-        if analytics["activity_distribution"]["Journal"] > 0:
+        if dist.get("Journal", 0) > 0:
             positive_habits.append("Regular emotional check-ins via Reflection Journal")
         if not positive_habits:
             positive_habits.append("Initiated daily wellness tracking and self-awareness check-ins")
@@ -136,7 +127,7 @@ class InsightsService:
             areas_for_attention.append("Recent mood logs indicated elevated stress or anxiety levels")
         if "HIGH_WORK_NO_REST" in heuristics:
             areas_for_attention.append("Extended focus work blocks completed without taking micro-rest breaks")
-        if analytics["activity_distribution"]["Breathing"] == 0:
+        if dist.get("Breathing", 0) == 0:
             areas_for_attention.append("Box breathing and parasympathetic nerve regulation exercises underutilized")
         if not areas_for_attention:
             areas_for_attention.append("Maintain current sleep cadence and avoid late-night screen time")
@@ -152,11 +143,13 @@ class InsightsService:
         recommendations.append("Keep logging your daily mood check-ins to track long-term emotional patterns.")
 
         return {
+            "has_data": True,
             "overall_progress": overall_progress,
             "positive_habits": positive_habits,
             "areas_for_attention": areas_for_attention,
             "recommendations": recommendations
         }
+
 
     @staticmethod
     def log_recommendation_feedback(user_id, recommendation_id, recommendation_type, accepted=False, dismissed=False, helpful=False, not_helpful=False):

@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <clipPath id="clip"><circle cx="60" cy="60" r="58"/></clipPath>
+    <radialGradient id="grad" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#E0E7FF"/>
+      <stop offset="100%" stop-color="#C7D2FE"/>
+    </radialGradient>
+  </defs>
+  <circle cx="60" cy="60" r="58" fill="url(#grad)"/>
+  <g clip-path="url(#clip)">
+    <!-- Shirt -->
+    <path d="M18 122 Q18 90 60 88 Q102 90 102 122Z" fill="#8B5CF6"/>
+    <!-- Neck -->
+    <rect x="52" y="72" width="16" height="18" rx="4" fill="#C68642"/>
+    <!-- Head -->
+    <ellipse cx="60" cy="54" rx="24" ry="27" fill="#D4956A"/>
+    <!-- Ears -->
+    <ellipse cx="36" cy="55" rx="5" ry="6" fill="#C68642"/>
+    <ellipse cx="36" cy="55" rx="3" ry="4" fill="#D4956A"/>
+    <ellipse cx="84" cy="55" rx="5" ry="6" fill="#C68642"/>
+    <ellipse cx="84" cy="55" rx="3" ry="4" fill="#D4956A"/>
+    <!-- Hair Base / Hair Back -->
+    <path d="M30 45 Q30 15 60 16 Q90 15 90 45 L94 85 Q80 88 80 55 Q78 27 60 27 Q42 27 40 55 L36 85 Q26 88 26 45Z" fill="#3B1F0A"/>
+    <!-- Eyebrows -->
+    <path d="M47 43 Q53 39 58 43" stroke="#3B1F0A" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M62 43 Q67 39 73 43" stroke="#3B1F0A" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <!-- Eyes -->
+    
+    <ellipse cx="52" cy="51" rx="4.5" ry="4" fill="#fff"/>
+    <circle cx="52" cy="51" r="2.8" fill="#3B1F0A"/>
+    <circle cx="53" cy="50" r="1" fill="#fff"/>
+    <ellipse cx="68" cy="51" rx="4.5" ry="4" fill="#fff"/>
+    <circle cx="68" cy="51" r="2.8" fill="#3B1F0A"/>
+    <circle cx="69" cy="50" r="1" fill="#fff"/>
+    
+    <!-- Nose -->
+    <path d="M58 56 Q60 61 62 56" stroke="#C68642" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <!-- Mouth -->
+    <path d="M51 65 Q60 73 69 65" stroke="#C68642" stroke-width="2" fill="none" stroke-linecap="round"/>
+    
+    <rect x="44" y="46" width="13" height="10" rx="3" fill="none" stroke="#1E293B" stroke-width="2"/>
+    <rect x="63" y="46" width="13" height="10" rx="3" fill="none" stroke="#1E293B" stroke-width="2"/>
+    <line x1="57" y1="51" x2="63" y2="51" stroke="#1E293B" stroke-width="1.8"/>
+    <line x1="33" y1="50" x2="44" y2="50" stroke="#1E293B" stroke-width="1.8"/>
+    <line x1="76" y1="50" x2="87" y2="50" stroke="#1E293B" stroke-width="1.8"/>
+    
+  </g>
+</svg>

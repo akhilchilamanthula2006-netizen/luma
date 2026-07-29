@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <clipPath id="clip"><circle cx="60" cy="60" r="58"/></clipPath>
+    <radialGradient id="grad" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#CCFBF1"/>
+      <stop offset="100%" stop-color="#99F6E4"/>
+    </radialGradient>
+  </defs>
+  <circle cx="60" cy="60" r="58" fill="url(#grad)"/>
+  <g clip-path="url(#clip)">
+    <!-- Shirt -->
+    <path d="M18 122 Q18 90 60 88 Q102 90 102 122Z" fill="#14B8A6"/>
+    <!-- Neck -->
+    <rect x="52" y="72" width="16" height="18" rx="4" fill="#4A2B0F"/>
+    <!-- Head -->
+    <ellipse cx="60" cy="54" rx="24" ry="27" fill="#603813"/>
+    <!-- Ears -->
+    <ellipse cx="36" cy="55" rx="5" ry="6" fill="#4A2B0F"/>
+    <ellipse cx="36" cy="55" rx="3" ry="4" fill="#603813"/>
+    <ellipse cx="84" cy="55" rx="5" ry="6" fill="#4A2B0F"/>
+    <ellipse cx="84" cy="55" rx="3" ry="4" fill="#603813"/>
+    <!-- Hair Base / Hair Back -->
+    <path d="M28 45 Q26 15 60 15 Q94 15 92 45 L94 88 Q82 90 80 58 Q78 28 60 28 Q42 28 40 58 L36 90 Q26 88 24 45Z" fill="#0F172A"/>
+    <!-- Eyebrows -->
+    <path d="M47 43 Q53 39 58 43" stroke="#0F172A" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M62 43 Q67 39 73 43" stroke="#0F172A" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <!-- Eyes -->
+    
+    <ellipse cx="52" cy="51" rx="4.5" ry="4" fill="#fff"/>
+    <circle cx="52" cy="51" r="2.8" fill="#0F172A"/>
+    <circle cx="53" cy="50" r="1" fill="#fff"/>
+    <ellipse cx="68" cy="51" rx="4.5" ry="4" fill="#fff"/>
+    <circle cx="68" cy="51" r="2.8" fill="#0F172A"/>
+    <circle cx="69" cy="50" r="1" fill="#fff"/>
+    
+    <!-- Nose -->
+    <path d="M57 57 Q60 62 63 57" stroke="#4A2B0F" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <!-- Mouth -->
+    <path d="M52 66 Q60 73 68 66" stroke="#4A2B0F" stroke-width="2" fill="none" stroke-linecap="round"/>
+    
+  </g>
+</svg>

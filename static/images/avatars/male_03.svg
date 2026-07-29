@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <clipPath id="clip"><circle cx="60" cy="60" r="58"/></clipPath>
+    <radialGradient id="grad" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#FCE7F3"/>
+      <stop offset="100%" stop-color="#FBCFE8"/>
+    </radialGradient>
+  </defs>
+  <circle cx="60" cy="60" r="58" fill="url(#grad)"/>
+  <g clip-path="url(#clip)">
+    <!-- Shirt -->
+    <path d="M18 122 Q18 90 60 88 Q102 90 102 122Z" fill="#7C3AED"/>
+    <!-- Neck -->
+    <rect x="52" y="72" width="16" height="18" rx="4" fill="#C68642"/>
+    <!-- Head -->
+    <ellipse cx="60" cy="54" rx="24" ry="27" fill="#D4956A"/>
+    <!-- Ears -->
+    <ellipse cx="36" cy="55" rx="5" ry="6" fill="#C68642"/>
+    <ellipse cx="36" cy="55" rx="3" ry="4" fill="#D4956A"/>
+    <ellipse cx="84" cy="55" rx="5" ry="6" fill="#C68642"/>
+    <ellipse cx="84" cy="55" rx="3" ry="4" fill="#D4956A"/>
+    <!-- Hair Base / Hair Back -->
+    <path d="M36 47 Q35 20 60 21 Q85 20 84 47 Q82 28 60 28 Q38 28 36 47Z" fill="#111827"/><path d="M44 70 Q60 80 76 70 Q76 75 60 77 Q44 75 44 70Z" fill="#111827" opacity="0.6"/>
+    <!-- Eyebrows -->
+    <path d="M47 44 Q53 41 58 44" stroke="#111827" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M62 44 Q67 41 73 44" stroke="#111827" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <!-- Eyes -->
+    
+    <ellipse cx="52" cy="51" rx="4.5" ry="4" fill="#fff"/>
+    <circle cx="52" cy="51" r="2.8" fill="#3B1F0A"/>
+    <circle cx="53" cy="50" r="1" fill="#fff"/>
+    <ellipse cx="68" cy="51" rx="4.5" ry="4" fill="#fff"/>
+    <circle cx="68" cy="51" r="2.8" fill="#3B1F0A"/>
+    <circle cx="69" cy="50" r="1" fill="#fff"/>
+    
+    <!-- Nose -->
+    <path d="M58 57 Q60 62 62 57" stroke="#C68642" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <!-- Mouth -->
+    <path d="M51 65 Q60 72 69 65" stroke="#C68642" stroke-width="2" fill="none" stroke-linecap="round"/>
+    
+  </g>
+</svg>

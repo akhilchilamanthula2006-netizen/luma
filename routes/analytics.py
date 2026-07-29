@@ -28,26 +28,29 @@ def index():
     except Exception as exc:
         logger.error("Failed to load analytics for user %s: %s", user_id, exc)
         summary_data = {
-            "wellness_score": {"current": 80, "label": "Stable"},
-            "sleep_score": {"current": 80, "last_night_hours": 7.5},
-            "current_streak": {"days": 1}
+            "wellness_score": {"current": 0, "label": "--"},
+            "sleep_score": {"current": 0, "last_night_hours": 0.0},
+            "current_streak": {"days": 0}
         }
         analytics = {
+            "has_data": False,
+            "is_demo": False,
             "day_labels": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-            "wellness_scores": [75, 78, 80, 82, 80, 85, 80],
-            "sleep_hours": [7.0, 7.5, 8.0, 7.2, 7.8, 8.1, 7.5],
-            "meditation_mins": [10, 15, 0, 20, 10, 15, 10],
-            "breathing_mins": [5, 5, 10, 5, 5, 10, 5],
-            "focus_mins": [25, 50, 25, 50, 25, 50, 25],
-            "mood_counts": {"Calm": 3, "Happy": 2, "Neutral": 2},
-            "activity_distribution": {"Breathing": 5, "Meditation": 3, "Focus": 4, "Sleep": 7, "Music": 3, "Journal": 2},
-            "total_weekly_activities": 24
+            "wellness_scores": [0, 0, 0, 0, 0, 0, 0],
+            "sleep_hours": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            "meditation_mins": [0, 0, 0, 0, 0, 0, 0],
+            "breathing_mins": [0, 0, 0, 0, 0, 0, 0],
+            "focus_mins": [0, 0, 0, 0, 0, 0, 0],
+            "mood_counts": {},
+            "activity_distribution": {},
+            "total_weekly_activities": 0
         }
         ai_summary = {
-            "overall_progress": "Steady wellness progress across tracked habits.",
-            "positive_habits": ["Maintained consistent sleep schedule"],
-            "areas_for_attention": ["Consider adding evening relaxation sessions"],
-            "recommendations": ["Log sleep daily to improve recommendations"]
+            "has_data": False,
+            "overall_progress": "",
+            "positive_habits": [],
+            "areas_for_attention": [],
+            "recommendations": []
         }
         timeline = []
 

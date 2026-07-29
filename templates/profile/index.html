@@ -18,12 +18,15 @@
         <div class="lg:col-span-1 space-y-8">
             <!-- User Card -->
             <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 text-center">
-                <div class="w-24 h-24 mx-auto rounded-full bg-primary/10 text-primary flex items-center justify-center text-4xl font-bold mb-4 overflow-hidden border-4 border-white shadow-sm">
-                    {% if user.avatar %}
-                        <img src="{{ user.avatar }}" alt="Avatar" class="w-full h-full object-cover">
-                    {% else %}
+                <div class="w-24 h-24 mx-auto rounded-full bg-primary/10 text-primary flex items-center justify-center text-4xl font-bold mb-4 overflow-hidden border-4 border-white shadow-sm relative">
+                    <img id="user-avatar-preview" 
+                         src="{{ user.avatar if user.avatar else '' }}" 
+                         alt="Avatar" 
+                         class="w-full h-full object-cover {% if not user.avatar %}hidden{% endif %}"
+                         onerror="this.classList.add('hidden'); document.getElementById('user-initial-fallback').classList.remove('hidden');">
+                    <span id="user-initial-fallback" class="{% if user.avatar %}hidden{% endif %}">
                         {{ user.username[0].upper() if user.username else 'U' }}
-                    {% endif %}
+                    </span>
                 </div>
                 <h3 class="text-xl font-bold text-secondary">{{ user.username }}</h3>
                 <p class="text-sm text-slate-500 mb-4">{{ user.email }}</p>
@@ -64,7 +67,7 @@
         <div class="lg:col-span-2">
             <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
                 <div class="p-6 border-b border-slate-100 bg-slate-50/50">
-                    <h3 class="text-lg font-bold text-secondary">Edit Information</h3>
+                    <h3 class="text-lg font-bold text-secondary">Edit Profile</h3>
                 </div>
                 
                 <form action="{{ url_for('profile.update_profile') }}" method="POST" class="p-6 space-y-6">
@@ -80,9 +83,81 @@
                         </div>
                     </div>
                     
-                    <div class="space-y-2">
-                        <label class="text-sm font-medium text-slate-700">Avatar URL</label>
-                        <input type="url" name="avatar" value="{{ user.avatar }}" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all" placeholder="https://example.com/avatar.jpg">
+                    <!-- Avatar Selection -->
+                    <div class="space-y-3">
+                        <label class="text-sm font-medium text-slate-700 block">Profile Avatar</label>
+
+                        <!-- Compact Avatar Preview Bar & Toggle Button -->
+                        <div class="flex items-center justify-between p-3.5 bg-slate-50 rounded-2xl border border-slate-100">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-full bg-primary/10 overflow-hidden border-2 border-white shadow-xs flex items-center justify-center text-lg font-bold text-primary">
+                                    <img id="form-avatar-preview" 
+                                         src="{{ user.avatar if user.avatar else '' }}" 
+                                         alt="Current Avatar" 
+                                         class="w-full h-full object-cover {% if not user.avatar %}hidden{% endif %}"
+                                         onerror="this.classList.add('hidden'); document.getElementById('form-avatar-initial').classList.remove('hidden');">
+                                    <span id="form-avatar-initial" class="{% if user.avatar %}hidden{% endif %}">
+                                        {{ user.username[0].upper() if user.username else 'U' }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold text-secondary">Active Avatar</p>
+                                    <p id="avatar-status-text" class="text-xs text-slate-500">
+                                        {% if user.avatar %}Custom avatar selected{% else %}Default initial avatar{% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                            <button type="button" id="toggle-avatar-gallery-btn" onclick="toggleAvatarGallery()" 
+                                    class="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-semibold rounded-xl hover:bg-slate-50 transition shadow-2xs">
+                                <svg class="w-3.5 h-3.5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                <span>Edit Avatar</span>
+                            </button>
+                        </div>
+
+                        <!-- Hidden input storing chosen avatar path -->
+                        <input type="hidden" id="selected-avatar-input" name="avatar" value="{{ user.avatar or '' }}">
+
+                        <!-- Collapsible Gallery Container -->
+                        <div id="avatar-gallery-container" class="transition-all duration-300 ease-in-out max-h-0 opacity-0 overflow-hidden">
+                            <div class="pt-2 space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-medium text-slate-500 uppercase tracking-wider">Choose from 24 Avatars</span>
+                                </div>
+                                <!-- Avatar Grid -->
+                                <div class="grid grid-cols-4 sm:grid-cols-6 gap-3 p-3 bg-slate-50/70 rounded-2xl border border-slate-100 max-h-72 overflow-y-auto">
+                                    {% set avatar_files = [
+                                        'male_01.svg', 'male_02.svg', 'male_03.svg', 'male_04.svg', 'male_05.svg', 'male_06.svg', 'male_07.svg', 'male_08.svg',
+                                        'female_01.svg', 'female_02.svg', 'female_03.svg', 'female_04.svg', 'female_05.svg', 'female_06.svg', 'female_07.svg', 'female_08.svg',
+                                        'neutral_01.svg', 'neutral_02.svg', 'neutral_03.svg', 'neutral_04.svg', 'neutral_05.svg', 'neutral_06.svg', 'neutral_07.svg', 'neutral_08.svg'
+                                    ] %}
+                                    {% for fn in avatar_files %}
+                                    {% set path = '/static/images/avatars/' ~ fn %}
+                                    <div class="avatar-tile relative cursor-pointer rounded-xl border-2 border-transparent p-1 transition-all duration-150 hover:border-blue-300 hover:scale-105 group bg-white shadow-xs"
+                                         data-avatar-path="{{ path }}"
+                                         onclick="selectAvatar('{{ path }}', this)">
+                                        <img src="{{ path }}" alt="Avatar {{ loop.index }}" class="w-full h-full rounded-lg object-cover">
+                                        <div class="selected-badge absolute -top-1 -right-1 w-4 h-4 bg-primary text-white rounded-full flex items-center justify-center hidden shadow-sm">
+                                            <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+
+                                <!-- Custom URL Option Toggle -->
+                                <div class="pt-1">
+                                    <button type="button" onclick="toggleCustomUrl()" class="text-xs font-medium text-primary hover:underline flex items-center gap-1 focus:outline-none">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                                        Or enter custom image URL
+                                    </button>
+                                    <div id="custom-url-box" class="mt-2 hidden">
+                                        <input type="url" id="custom-avatar-url" value="{{ user.avatar if user.avatar and user.avatar.startswith('http') else '' }}" 
+                                               oninput="handleCustomUrlInput(this.value)"
+                                               class="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none" 
+                                               placeholder="https://example.com/avatar.jpg">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="space-y-2">
@@ -92,7 +167,7 @@
 
                     <div class="pt-4 border-t border-slate-100 flex justify-end">
                         <button type="submit" class="px-6 py-2.5 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-colors shadow-sm shadow-primary/20">
-                            Save Changes
+                            Save Profile
                         </button>
                     </div>
                 </form>
@@ -100,4 +175,109 @@
         </div>
     </div>
 </div>
+
+<script>
+    let galleryOpen = false;
+
+    function toggleAvatarGallery() {
+        const container = document.getElementById('avatar-gallery-container');
+        const btnText = document.querySelector('#toggle-avatar-gallery-btn span');
+        if (!container) return;
+
+        galleryOpen = !galleryOpen;
+        if (galleryOpen) {
+            container.classList.remove('max-h-0', 'opacity-0');
+            container.classList.add('max-h-[600px]', 'opacity-100');
+            if (btnText) btnText.textContent = 'Close Gallery';
+        } else {
+            container.classList.remove('max-h-[600px]', 'opacity-100');
+            container.classList.add('max-h-0', 'opacity-0');
+            if (btnText) btnText.textContent = 'Edit Avatar';
+        }
+    }
+
+    function collapseAvatarGallery() {
+        const container = document.getElementById('avatar-gallery-container');
+        const btnText = document.querySelector('#toggle-avatar-gallery-btn span');
+        if (!container) return;
+        galleryOpen = false;
+        container.classList.remove('max-h-[600px]', 'opacity-100');
+        container.classList.add('max-h-0', 'opacity-0');
+        if (btnText) btnText.textContent = 'Edit Avatar';
+    }
+
+    function selectAvatar(path, element, autoCollapse = true) {
+        document.getElementById('selected-avatar-input').value = path;
+        
+        // Remove selection highlights
+        document.querySelectorAll('.avatar-tile').forEach(tile => {
+            tile.classList.remove('border-primary', 'ring-2', 'ring-primary/40', 'bg-blue-50/50');
+            tile.classList.add('border-transparent');
+            tile.querySelector('.selected-badge')?.classList.add('hidden');
+        });
+
+        // Highlight selected element
+        if (element) {
+            element.classList.remove('border-transparent');
+            element.classList.add('border-primary', 'ring-2', 'ring-primary/40', 'bg-blue-50/50');
+            element.querySelector('.selected-badge')?.classList.remove('hidden');
+        }
+
+        // Update previews in user card and compact bar
+        const mainPreview = document.getElementById('user-avatar-preview');
+        const mainFallback = document.getElementById('user-initial-fallback');
+        const formPreview = document.getElementById('form-avatar-preview');
+        const formFallback = document.getElementById('form-avatar-initial');
+        const statusText = document.getElementById('avatar-status-text');
+
+        if (path) {
+            if (mainPreview) { mainPreview.src = path; mainPreview.classList.remove('hidden'); }
+            if (mainFallback) mainFallback.classList.add('hidden');
+            if (formPreview) { formPreview.src = path; formPreview.classList.remove('hidden'); }
+            if (formFallback) formFallback.classList.add('hidden');
+            if (statusText) statusText.textContent = 'Avatar selected (unsaved)';
+        } else {
+            if (mainPreview) mainPreview.classList.add('hidden');
+            if (mainFallback) mainFallback.classList.remove('hidden');
+            if (formPreview) formPreview.classList.add('hidden');
+            if (formFallback) formFallback.classList.remove('hidden');
+            if (statusText) statusText.textContent = 'Default initial avatar';
+        }
+
+        // Auto collapse gallery if selected via click
+        if (autoCollapse) {
+            collapseAvatarGallery();
+        }
+    }
+
+    function toggleCustomUrl() {
+        const box = document.getElementById('custom-url-box');
+        box.classList.toggle('hidden');
+    }
+
+    function handleCustomUrlInput(val) {
+        if (val.trim()) {
+            document.querySelectorAll('.avatar-tile').forEach(tile => {
+                tile.classList.remove('border-primary', 'ring-2', 'ring-primary/40', 'bg-blue-50/50');
+                tile.classList.add('border-transparent');
+                tile.querySelector('.selected-badge')?.classList.add('hidden');
+            });
+            selectAvatar(val.trim(), null, false);
+        }
+    }
+
+    // On load, highlight active avatar tile without auto-collapsing
+    document.addEventListener('DOMContentLoaded', () => {
+        const currentAvatar = document.getElementById('selected-avatar-input').value;
+        if (currentAvatar) {
+            const matchingTile = document.querySelector(`.avatar-tile[data-avatar-path="${currentAvatar}"]`);
+            if (matchingTile) {
+                selectAvatar(currentAvatar, matchingTile, false);
+            } else if (currentAvatar.startsWith('http')) {
+                document.getElementById('custom-url-box')?.classList.remove('hidden');
+            }
+        }
+    });
+</script>
+
 {% endblock %}

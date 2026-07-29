@@ -14,15 +14,7 @@
     <!-- Header Section -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-            <div class="flex items-center gap-3">
-                <h1 class="text-3xl font-bold tracking-tight text-secondary">Analytics & Progress</h1>
-                {% if analytics and analytics.is_demo %}
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 shadow-sm" title="Demonstration data displayed because no real analytics have been logged yet.">
-                    <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-500"></i>
-                    <span>Demo Analytics</span>
-                </span>
-                {% endif %}
-            </div>
+            <h1 class="text-3xl font-bold tracking-tight text-secondary">Analytics & Progress</h1>
             <p class="text-slate-500 mt-1">Track your 7-day emotional trends, sleep quality, habit metrics, and AI wellness insights.</p>
         </div>
         <div class="flex items-center space-x-3">
@@ -35,6 +27,26 @@
         </div>
     </div>
 
+    {% if not analytics or not analytics.has_data %}
+    <!-- Premium Empty State Banner -->
+    <div class="bg-gradient-to-r from-blue-50/80 via-indigo-50/50 to-purple-50/80 rounded-2xl border border-blue-100 p-8 sm:p-10 shadow-xs text-center space-y-4">
+        <div class="w-16 h-16 bg-white text-primary rounded-2xl flex items-center justify-center mx-auto shadow-sm border border-blue-100">
+            <i data-lucide="sparkles" class="w-8 h-8 text-primary"></i>
+        </div>
+        <div class="max-w-xl mx-auto space-y-2">
+            <h2 class="text-2xl font-bold text-secondary">Your Wellness Journey Starts Here</h2>
+            <p class="text-slate-600 text-sm leading-relaxed">
+                Complete your first wellness activity to unlock personalized insights, charts, and AI recommendations.
+            </p>
+        </div>
+        <div class="pt-2">
+            <a href="{{ url_for('wellness.index') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-medium rounded-xl hover:bg-blue-700 transition shadow-md shadow-primary/20">
+                <i data-lucide="heart" class="w-4.5 h-4.5"></i>
+                <span>Go to Wellness Hub</span>
+            </a>
+        </div>
+    </div>
+    {% endif %}
 
     <!-- 1. Summary Cards Grid (4 Cards) -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -43,14 +55,21 @@
             <div>
                 <span class="text-xs text-slate-400 font-medium uppercase tracking-wider block mb-1">Wellness Score</span>
                 <div class="flex items-baseline space-x-2">
-                    <span class="text-3xl font-bold text-secondary">{{ summary.wellness_score.current if (summary and summary.wellness_score) else 80 }}</span>
+                    <span class="text-3xl font-bold text-secondary">
+                        {% if analytics and analytics.has_data and summary and summary.wellness_score and summary.wellness_score.current > 0 %}
+                            {{ summary.wellness_score.current }}
+                        {% else %}
+                            --
+                        {% endif %}
+                    </span>
                     <span class="text-xs text-slate-400 font-medium">/ 100</span>
                 </div>
-                <span class="inline-block mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-semibold
-                    {% if summary and summary.wellness_score and summary.wellness_score.current >= 80 %}bg-emerald-50 text-emerald-600 border border-emerald-100
-                    {% elif summary and summary.wellness_score and summary.wellness_score.current >= 65 %}bg-teal-50 text-teal-600 border border-teal-100
-                    {% else %}bg-amber-50 text-amber-600 border border-amber-100{% endif %}">
-                    {{ summary.wellness_score.label if (summary and summary.wellness_score) else 'Stable' }}
+                <span class="inline-block mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-600">
+                    {% if analytics and analytics.has_data and summary and summary.wellness_score and summary.wellness_score.current > 0 %}
+                        {{ summary.wellness_score.label }}
+                    {% else %}
+                        No Data
+                    {% endif %}
                 </span>
             </div>
             <div class="w-12 h-12 rounded-xl bg-blue-50 text-primary flex items-center justify-center flex-shrink-0">
@@ -63,11 +82,23 @@
             <div>
                 <span class="text-xs text-slate-400 font-medium uppercase tracking-wider block mb-1">Sleep Score</span>
                 <div class="flex items-baseline space-x-2">
-                    <span class="text-3xl font-bold text-secondary">{{ summary.sleep_score.current if (summary and summary.sleep_score) else 80 }}</span>
+                    <span class="text-3xl font-bold text-secondary">
+                        {% if analytics and analytics.has_data and summary and summary.sleep_score and summary.sleep_score.current > 0 %}
+                            {{ summary.sleep_score.current }}
+                        {% else %}
+                            --
+                        {% endif %}
+                    </span>
                     <span class="text-xs text-slate-400 font-medium">pts</span>
                 </div>
                 <span class="text-xs text-slate-500 mt-2 block font-medium">
-                    Last night: <strong class="text-secondary">{{ summary.sleep_score.last_night_hours if (summary and summary.sleep_score) else 7.5 }} hrs</strong>
+                    Last night: <strong class="text-secondary">
+                        {% if analytics and analytics.has_data and summary and summary.sleep_score and summary.sleep_score.last_night_hours > 0 %}
+                            {{ summary.sleep_score.last_night_hours }} hrs
+                        {% else %}
+                            --
+                        {% endif %}
+                    </strong>
                 </span>
             </div>
             <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center flex-shrink-0">
@@ -80,11 +111,17 @@
             <div>
                 <span class="text-xs text-slate-400 font-medium uppercase tracking-wider block mb-1">Current Streak</span>
                 <div class="flex items-baseline space-x-2">
-                    <span class="text-3xl font-bold text-secondary">{{ summary.current_streak.days if (summary and summary.current_streak) else 1 }}</span>
+                    <span class="text-3xl font-bold text-secondary">
+                        {% if analytics and analytics.has_data and summary and summary.current_streak %}
+                            {{ summary.current_streak.days }}
+                        {% else %}
+                            0
+                        {% endif %}
+                    </span>
                     <span class="text-xs text-slate-400 font-medium">Days</span>
                 </div>
-                <span class="text-xs text-emerald-600 font-semibold mt-2 inline-flex items-center gap-1">
-                    <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Active Streak
+                <span class="text-xs text-slate-500 font-medium mt-2 inline-flex items-center gap-1">
+                    <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-500"></i> Active Streak
                 </span>
             </div>
             <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
@@ -97,11 +134,13 @@
             <div>
                 <span class="text-xs text-slate-400 font-medium uppercase tracking-wider block mb-1">Weekly Activities</span>
                 <div class="flex items-baseline space-x-2">
-                    <span class="text-3xl font-bold text-secondary">{{ analytics.total_weekly_activities if analytics else 0 }}</span>
+                    <span class="text-3xl font-bold text-secondary">
+                        {{ analytics.total_weekly_activities if (analytics and analytics.has_data) else 0 }}
+                    </span>
                     <span class="text-xs text-slate-400 font-medium">logged</span>
                 </div>
                 <span class="text-xs text-slate-500 font-medium mt-2 block">
-                    Across 7 wellness tools
+                    Across wellness tools
                 </span>
             </div>
             <div class="w-12 h-12 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center flex-shrink-0">
@@ -113,7 +152,7 @@
     <!-- 2. Chart.js Graphs Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- Chart 1: 7-Day Wellness Score Trend -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4 relative overflow-hidden">
             <div class="flex items-center justify-between">
                 <div>
                     <h3 class="text-lg font-bold text-secondary">Wellness Score (7 Days)</h3>
@@ -122,12 +161,19 @@
                 <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-primary">0–100 Scale</span>
             </div>
             <div class="h-64 relative">
+                {% if not analytics or not analytics.has_data %}
+                <div class="absolute inset-0 flex flex-col items-center justify-center bg-white/90 backdrop-blur-[1px] rounded-2xl z-10 p-4 text-center">
+                    <i data-lucide="bar-chart-2" class="w-8 h-8 text-slate-300 mb-2"></i>
+                    <p class="text-xs font-semibold text-slate-500">No data available yet</p>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Complete a wellness session to see chart history</p>
+                </div>
+                {% endif %}
                 <canvas id="wellnessChart"></canvas>
             </div>
         </div>
 
         <!-- Chart 2: 7-Day Sleep Duration -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4 relative overflow-hidden">
             <div class="flex items-center justify-between">
                 <div>
                     <h3 class="text-lg font-bold text-secondary">Sleep Duration (7 Days)</h3>
@@ -136,12 +182,19 @@
                 <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-600">Hours</span>
             </div>
             <div class="h-64 relative">
+                {% if not analytics or not analytics.has_data %}
+                <div class="absolute inset-0 flex flex-col items-center justify-center bg-white/90 backdrop-blur-[1px] rounded-2xl z-10 p-4 text-center">
+                    <i data-lucide="moon" class="w-8 h-8 text-slate-300 mb-2"></i>
+                    <p class="text-xs font-semibold text-slate-500">No data available yet</p>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Log your sleep to view duration trends</p>
+                </div>
+                {% endif %}
                 <canvas id="sleepChart"></canvas>
             </div>
         </div>
 
         <!-- Chart 3: Mood Frequency Distribution -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4 relative overflow-hidden">
             <div class="flex items-center justify-between">
                 <div>
                     <h3 class="text-lg font-bold text-secondary">Mood Trend</h3>
@@ -150,12 +203,19 @@
                 <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-600">7-Day Log</span>
             </div>
             <div class="h-64 relative">
+                {% if not analytics or not analytics.has_data or not analytics.mood_counts %}
+                <div class="absolute inset-0 flex flex-col items-center justify-center bg-white/90 backdrop-blur-[1px] rounded-2xl z-10 p-4 text-center">
+                    <i data-lucide="smile" class="w-8 h-8 text-slate-300 mb-2"></i>
+                    <p class="text-xs font-semibold text-slate-500">No data available yet</p>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Record daily mood check-ins to track trends</p>
+                </div>
+                {% endif %}
                 <canvas id="moodChart"></canvas>
             </div>
         </div>
 
         <!-- Chart 4: Activity Breakdown (Doughnut) -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4 relative overflow-hidden">
             <div class="flex items-center justify-between">
                 <div>
                     <h3 class="text-lg font-bold text-secondary">Activity Distribution</h3>
@@ -164,12 +224,19 @@
                 <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-teal-50 text-teal-600">Breakdown</span>
             </div>
             <div class="h-64 relative">
+                {% if not analytics or not analytics.has_data or not analytics.activity_distribution %}
+                <div class="absolute inset-0 flex flex-col items-center justify-center bg-white/90 backdrop-blur-[1px] rounded-2xl z-10 p-4 text-center">
+                    <i data-lucide="pie-chart" class="w-8 h-8 text-slate-300 mb-2"></i>
+                    <p class="text-xs font-semibold text-slate-500">No data available yet</p>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Use breathing, meditation or focus tools</p>
+                </div>
+                {% endif %}
                 <canvas id="activityChart"></canvas>
             </div>
         </div>
 
-        <!-- Chart 5: Meditation & Breathing Time (Stacked Bar) -->
-        <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+        <!-- Chart 5: Mindfulness Time (Stacked Bar) -->
+        <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4 relative overflow-hidden">
             <div class="flex items-center justify-between">
                 <div>
                     <h3 class="text-lg font-bold text-secondary">Mindfulness Time (Meditation vs Breathing)</h3>
@@ -178,6 +245,13 @@
                 <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-600">Minutes / Day</span>
             </div>
             <div class="h-64 relative">
+                {% if not analytics or not analytics.has_data %}
+                <div class="absolute inset-0 flex flex-col items-center justify-center bg-white/90 backdrop-blur-[1px] rounded-2xl z-10 p-4 text-center">
+                    <i data-lucide="wind" class="w-8 h-8 text-slate-300 mb-2"></i>
+                    <p class="text-xs font-semibold text-slate-500">No data available yet</p>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Complete breathing or meditation sessions to track mindfulness time</p>
+                </div>
+                {% endif %}
                 <canvas id="mindfulnessChart"></canvas>
             </div>
         </div>
@@ -200,6 +274,18 @@
             </span>
         </div>
 
+        {% if not analytics or not analytics.has_data %}
+        <div class="bg-slate-800/50 rounded-xl p-8 border border-slate-800 text-center space-y-3">
+            <i data-lucide="sparkles" class="w-8 h-8 text-blue-400 mx-auto opacity-60"></i>
+            <h4 class="text-sm font-semibold text-slate-300">No AI Insights Available Yet</h4>
+            <p class="text-xs text-slate-400 max-w-md mx-auto">Complete your first activity in the Wellness Hub to receive intelligent weekly analysis and personalized recommendations.</p>
+            <div class="pt-2">
+                <a href="{{ url_for('wellness.index') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300">
+                    <span>Go to Wellness Hub</span> &rarr;
+                </a>
+            </div>
+        </div>
+        {% else %}
         <!-- Progress Overview -->
         <div class="bg-slate-800/50 rounded-xl p-5 border border-slate-800">
             <h4 class="text-xs font-semibold text-blue-400 uppercase tracking-wider mb-2 flex items-center gap-2">
@@ -227,7 +313,7 @@
                     {% else %}
                         <li class="flex items-start gap-2">
                             <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-0.5"></i>
-                            <span>Maintained daily wellness tracking</span>
+                            <span>Initiated daily wellness check-ins</span>
                         </li>
                     {% endif %}
                 </ul>
@@ -277,6 +363,7 @@
                 </ul>
             </div>
         </div>
+        {% endif %}
     </div>
 
     <!-- 4. Unified Timeline -->
@@ -315,9 +402,20 @@
                 </div>
                 {% endfor %}
             {% else %}
-                <div class="py-8 text-center text-slate-400">
-                    <i data-lucide="clock" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
-                    <p class="text-xs">No activity recorded in timeline yet.</p>
+                <div class="py-12 text-center space-y-3">
+                    <div class="w-12 h-12 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center mx-auto">
+                        <i data-lucide="clock" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-slate-600">No activity recorded in timeline yet.</p>
+                        <p class="text-xs text-slate-400 mt-1">Start a session in the Wellness Hub to build your activity history.</p>
+                    </div>
+                    <div class="pt-2">
+                        <a href="{{ url_for('wellness.index') }}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">
+                            <i data-lucide="heart" class="w-3.5 h-3.5"></i>
+                            <span>Go to Wellness Hub</span>
+                        </a>
+                    </div>
                 </div>
             {% endif %}
         </div>
@@ -326,14 +424,12 @@
 </div>
 {% endblock %}
 
+{% block scripts %}
 <!-- Embedded JSON data block for safe JS parsing -->
 <script id="analytics-data" type="application/json">
 {{ (analytics or {}) | tojson | safe }}
 </script>
-
-{% block scripts %}
 <script>
-    // Safe JSON parse from application/json script tag
     let analyticsData = {};
     try {
         const dataEl = document.getElementById('analytics-data');
@@ -343,7 +439,6 @@
     } catch (e) {
         console.warn('Analytics JSON parse fallback:', e);
     }
-
 
     const dayLabels = (analyticsData && analyticsData.day_labels && analyticsData.day_labels.length) 
         ? analyticsData.day_labels 
@@ -357,7 +452,7 @@
             labels: dayLabels,
             datasets: [{
                 label: 'Wellness Score',
-                data: (analyticsData && analyticsData.wellness_scores) ? analyticsData.wellness_scores : [75, 78, 80, 82, 80, 85, 80],
+                data: (analyticsData && analyticsData.wellness_scores) ? analyticsData.wellness_scores : [0, 0, 0, 0, 0, 0, 0],
                 borderColor: '#2563EB',
                 backgroundColor: 'rgba(37, 99, 235, 0.08)',
                 fill: true,
@@ -371,7 +466,7 @@
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-                y: { min: 30, max: 100, grid: { color: '#F1F5F9' } },
+                y: { min: 0, max: 100, grid: { color: '#F1F5F9' } },
                 x: { grid: { display: false } }
             },
             plugins: { legend: { display: false } }
@@ -386,7 +481,7 @@
             labels: dayLabels,
             datasets: [{
                 label: 'Hours Slept',
-                data: (analyticsData && analyticsData.sleep_hours) ? analyticsData.sleep_hours : [7.0, 7.5, 8.0, 7.2, 7.8, 8.1, 7.5],
+                data: (analyticsData && analyticsData.sleep_hours) ? analyticsData.sleep_hours : [0, 0, 0, 0, 0, 0, 0],
                 backgroundColor: '#9333EA',
                 borderRadius: 8,
                 maxBarThickness: 32
@@ -404,7 +499,7 @@
     });
 
     // 3. Mood Trend Chart
-    const moodCounts = (analyticsData && analyticsData.mood_counts) ? analyticsData.mood_counts : {"Happy": 3, "Calm": 2, "Neutral": 2};
+    const moodCounts = (analyticsData && analyticsData.mood_counts && Object.keys(analyticsData.mood_counts).length) ? analyticsData.mood_counts : {"No Moods": 0};
     const ctxMood = document.getElementById('moodChart').getContext('2d');
     new Chart(ctxMood, {
         type: 'bar',
@@ -431,7 +526,7 @@
     });
 
     // 4. Activity Distribution Chart (Doughnut)
-    const actDist = (analyticsData && analyticsData.activity_distribution) ? analyticsData.activity_distribution : {"Breathing": 5, "Meditation": 3, "Focus": 4, "Sleep": 7, "Music": 3, "Journal": 2};
+    const actDist = (analyticsData && analyticsData.activity_distribution && Object.keys(analyticsData.activity_distribution).length) ? analyticsData.activity_distribution : {"No Activity": 1};
     const ctxActivity = document.getElementById('activityChart').getContext('2d');
     new Chart(ctxActivity, {
         type: 'doughnut',
@@ -439,7 +534,9 @@
             labels: Object.keys(actDist),
             datasets: [{
                 data: Object.values(actDist),
-                backgroundColor: ['#2563EB', '#14B8A6', '#6366F1', '#9333EA', '#F43F5E', '#0F172A'],
+                backgroundColor: (analyticsData && analyticsData.activity_distribution && Object.keys(analyticsData.activity_distribution).length)
+                    ? ['#2563EB', '#14B8A6', '#6366F1', '#9333EA', '#F43F5E', '#0F172A']
+                    : ['#E2E8F0'],
                 borderWidth: 0
             }]
         },
@@ -462,13 +559,13 @@
             datasets: [
                 {
                     label: 'Breathing (mins)',
-                    data: (analyticsData && analyticsData.breathing_mins) ? analyticsData.breathing_mins : [5, 5, 10, 5, 5, 10, 5],
+                    data: (analyticsData && analyticsData.breathing_mins) ? analyticsData.breathing_mins : [0, 0, 0, 0, 0, 0, 0],
                     backgroundColor: '#2563EB',
                     borderRadius: 4
                 },
                 {
                     label: 'Meditation (mins)',
-                    data: (analyticsData && analyticsData.meditation_mins) ? analyticsData.meditation_mins : [10, 15, 0, 20, 10, 15, 10],
+                    data: (analyticsData && analyticsData.meditation_mins) ? analyticsData.meditation_mins : [0, 0, 0, 0, 0, 0, 0],
                     backgroundColor: '#14B8A6',
                     borderRadius: 4
                 }
@@ -487,10 +584,9 @@
         }
     });
 
-    // Re-initialize Lucide icons for template icon elements
+    // Re-initialize Lucide icons
     if (window.lucide) {
         lucide.createIcons();
     }
 </script>
-
 {% endblock %}

@@ -4,39 +4,77 @@ from services.mongo_service import MongoService
 
 class StatisticsService:
     @staticmethod
+    def _get_user_docs(col, user_id, query_extra=None):
+        """Helper to fetch user documents matching user_id stored as ObjectId or str."""
+        extra = query_extra or {}
+        docs = []
+        try:
+            docs.extend(list(col.find({"user_id": ObjectId(user_id), **extra})))
+        except Exception:
+            pass
+        docs.extend(list(col.find({"user_id": str(user_id), **extra})))
+        
+        # Deduplicate by document _id
+        seen = set()
+        unique_docs = []
+        for d in docs:
+            if d.get("_id") not in seen:
+                seen.add(d.get("_id"))
+                unique_docs.append(d)
+        return unique_docs
+
+    @staticmethod
+    def _count_user_docs(col, user_id, query_extra=None):
+        """Helper to count user documents matching user_id stored as ObjectId or str."""
+        extra = query_extra or {}
+        total = col.count_documents({"user_id": str(user_id), **extra})
+        try:
+            total += col.count_documents({"user_id": ObjectId(user_id), **extra})
+        except Exception:
+            pass
+        return total
+
+    @staticmethod
     def get_summary(user_id, date_str=None):
         db = MongoService.get_db()
         today = date_str or datetime.now().strftime("%Y-%m-%d")
 
-        # Sum breathing
-        b_sessions = list(db.breathing_sessions.find({"user_id": ObjectId(user_id)}))
+        b_sessions = StatisticsService._get_user_docs(db.breathing_sessions, user_id)
         b_mins = sum(s.get("duration_seconds", 0) for s in b_sessions) // 60
 
-        # Sum meditation
-        m_sessions = list(db.meditation_sessions.find({"user_id": ObjectId(user_id)}))
+        m_sessions = StatisticsService._get_user_docs(db.meditation_sessions, user_id)
         m_mins = sum(s.get("elapsed_seconds", 0) for s in m_sessions) // 60
 
-        # Sum focus
-        f_sessions = list(db.focus_sessions.find({"user_id": ObjectId(user_id)}))
+        f_sessions = StatisticsService._get_user_docs(db.focus_sessions, user_id)
         f_mins = sum(s.get("total_focus_seconds", 0) for s in f_sessions) // 60
 
-        # Sum music
-        music_logs = list(db.music_listening_history.find({"user_id": ObjectId(user_id)}))
+        music_logs = StatisticsService._get_user_docs(db.music_listening_history, user_id)
         music_mins = sum(m.get("listened_duration_seconds", 0) for m in music_logs) // 60
 
-        # Activities today
-        act_count = db.activity_logs.count_documents({"user_id": ObjectId(user_id), "date": today})
+        act_count = StatisticsService._count_user_docs(db.activity_logs, user_id, {"date": today})
 
-        # Latest sleep
-        sleep_doc = db.sleep_logs.find_one({"user_id": ObjectId(user_id), "sleep_date": today})
+        sleep_docs = StatisticsService._get_user_docs(db.sleep_logs, user_id, {"sleep_date": today})
+        sleep_doc = sleep_docs[0] if sleep_docs else None
         sleep_hours = sleep_doc.get("hours_slept", 7.5) if sleep_doc else 7.5
         sleep_score = sleep_doc.get("sleep_score", 80) if sleep_doc else 80
 
-        # Streak calculation (simple active days count)
-        streak_count = min(30, max(1, len(set(s.get("created_at", datetime.now()).strftime("%Y-%m-%d") for s in b_sessions + m_sessions + f_sessions)) or 1))
+        active_dates = set()
+        for s in b_sessions + m_sessions + f_sessions:
+            created = s.get("created_at")
+            if isinstance(created, datetime):
+                active_dates.add(created.strftime("%Y-%m-%d"))
+            elif isinstance(created, str):
+                active_dates.add(created[:10])
+
+        streak_count = min(30, max(1, len(active_dates) or 1))
+
+        try:
+            uid_obj = ObjectId(user_id)
+        except Exception:
+            uid_obj = str(user_id)
 
         summary_doc = {
-            "user_id": ObjectId(user_id),
+            "user_id": uid_obj,
             "date": today,
             "breathing_minutes": b_mins,
             "meditation_minutes": m_mins,
@@ -50,7 +88,7 @@ class StatisticsService:
         }
 
         db.wellness_daily_summaries.update_one(
-            {"user_id": ObjectId(user_id), "date": today},
+            {"user_id": uid_obj, "date": today},
             {"$set": summary_doc},
             upsert=True
         )
@@ -60,13 +98,14 @@ class StatisticsService:
     @staticmethod
     def get_unified_timeline(user_id, limit=30):
         db = MongoService.get_db()
-        uid = ObjectId(user_id)
         timeline = []
 
         # 1. Breathing Sessions
-        for doc in db.breathing_sessions.find({"user_id": uid}).sort("created_at", -1).limit(10):
+        for doc in StatisticsService._get_user_docs(db.breathing_sessions, user_id):
+            created = doc.get("created_at")
+            ts = created.isoformat() if isinstance(created, datetime) else (str(created) if created else "")
             timeline.append({
-                "timestamp": doc.get("created_at").isoformat() if doc.get("created_at") else "",
+                "timestamp": ts,
                 "event_type": "breathing",
                 "title": f"Completed {str(doc.get('pattern_type', 'Breathing')).capitalize()} Session",
                 "duration_summary": f"{doc.get('duration_seconds', 0) // 60} min",
@@ -74,9 +113,11 @@ class StatisticsService:
             })
 
         # 2. Meditation Sessions
-        for doc in db.meditation_sessions.find({"user_id": uid}).sort("created_at", -1).limit(10):
+        for doc in StatisticsService._get_user_docs(db.meditation_sessions, user_id):
+            created = doc.get("created_at")
+            ts = created.isoformat() if isinstance(created, datetime) else (str(created) if created else "")
             timeline.append({
-                "timestamp": doc.get("created_at").isoformat() if doc.get("created_at") else "",
+                "timestamp": ts,
                 "event_type": "meditation",
                 "title": f"Mindful Meditation ({doc.get('duration_minutes', 10)}m)",
                 "duration_summary": f"{doc.get('duration_minutes', 10)} min",
@@ -84,9 +125,11 @@ class StatisticsService:
             })
 
         # 3. Focus Blocks
-        for doc in db.focus_sessions.find({"user_id": uid}).sort("created_at", -1).limit(10):
+        for doc in StatisticsService._get_user_docs(db.focus_sessions, user_id):
+            created = doc.get("created_at")
+            ts = created.isoformat() if isinstance(created, datetime) else (str(created) if created else "")
             timeline.append({
-                "timestamp": doc.get("created_at").isoformat() if doc.get("created_at") else "",
+                "timestamp": ts,
                 "event_type": "focus",
                 "title": f"Focus Block: {str(doc.get('session_type', 'Pomodoro')).capitalize()}",
                 "duration_summary": f"{doc.get('total_focus_seconds', 0) // 60} min",
@@ -94,9 +137,11 @@ class StatisticsService:
             })
 
         # 4. Sleep Logs
-        for doc in db.sleep_logs.find({"user_id": uid}).sort("created_at", -1).limit(5):
+        for doc in StatisticsService._get_user_docs(db.sleep_logs, user_id):
+            created = doc.get("created_at")
+            ts = created.isoformat() if isinstance(created, datetime) else (doc.get("sleep_date", "") if doc.get("sleep_date") else "")
             timeline.append({
-                "timestamp": doc.get("created_at").isoformat() if doc.get("created_at") else "",
+                "timestamp": ts,
                 "event_type": "sleep",
                 "title": f"Sleep Log: {doc.get('hours_slept', 0)} hrs",
                 "duration_summary": f"{doc.get('hours_slept', 0)} hrs",
@@ -104,9 +149,11 @@ class StatisticsService:
             })
 
         # 5. Reflection Journal Entries
-        for doc in db.journal_entries.find({"user_id": uid, "is_deleted": {"$ne": True}}).sort("created_at", -1).limit(10):
+        for doc in StatisticsService._get_user_docs(db.journal_entries, user_id, {"is_deleted": {"$ne": True}}):
+            created = doc.get("created_at")
+            ts = created.isoformat() if isinstance(created, datetime) else (str(created) if created else "")
             timeline.append({
-                "timestamp": doc.get("created_at").isoformat() if doc.get("created_at") else "",
+                "timestamp": ts,
                 "event_type": "journal",
                 "title": f"Reflected: {doc.get('title', 'Untitled Reflection')}",
                 "duration_summary": "Journal",
@@ -114,9 +161,11 @@ class StatisticsService:
             })
 
         # 6. Music Soundscapes History
-        for doc in db.music_listening_history.find({"user_id": uid}).sort("started_at", -1).limit(10):
+        for doc in StatisticsService._get_user_docs(db.music_listening_history, user_id):
+            started = doc.get("started_at")
+            ts = started.isoformat() if isinstance(started, datetime) else (str(started) if started else "")
             timeline.append({
-                "timestamp": doc.get("started_at").isoformat() if doc.get("started_at") else "",
+                "timestamp": ts,
                 "event_type": "music",
                 "title": f"Listened to {str(doc.get('category', 'Calm')).replace('_', ' ').capitalize()} Soundscape",
                 "duration_summary": f"{doc.get('listened_duration_seconds', 0) // 60} min",
@@ -124,9 +173,11 @@ class StatisticsService:
             })
 
         # 7. Quick Habit Logs
-        for doc in db.activity_logs.find({"user_id": uid}).sort("created_at", -1).limit(10):
+        for doc in StatisticsService._get_user_docs(db.activity_logs, user_id):
+            created = doc.get("created_at")
+            ts = created.isoformat() if isinstance(created, datetime) else (str(created) if created else "")
             timeline.append({
-                "timestamp": doc.get("created_at").isoformat() if doc.get("created_at") else "",
+                "timestamp": ts,
                 "event_type": "activity",
                 "title": f"Completed Habit: {str(doc.get('activity_type', 'Habit')).capitalize()}",
                 "duration_summary": "Habit",
@@ -138,18 +189,75 @@ class StatisticsService:
         return timeline[:limit]
 
     @staticmethod
+    def has_wellness_history(user_id):
+        """
+        Determines whether a user has logged any lifetime wellness activities in MongoDB.
+        Supports both ObjectId and str user_id representations across all collections.
+        """
+        db = MongoService.get_db()
+        if db is None or not user_id:
+            return False
+
+        total_records = (
+            StatisticsService._count_user_docs(db.breathing_sessions, user_id) +
+            StatisticsService._count_user_docs(db.meditation_sessions, user_id) +
+            StatisticsService._count_user_docs(db.focus_sessions, user_id) +
+            StatisticsService._count_user_docs(db.sleep_logs, user_id) +
+            StatisticsService._count_user_docs(db.music_listening_history, user_id) +
+            StatisticsService._count_user_docs(db.journal_entries, user_id, {"is_deleted": {"$ne": True}}) +
+            StatisticsService._count_user_docs(db.activity_logs, user_id) +
+            StatisticsService._count_user_docs(db.mood_logs, user_id)
+        )
+        return total_records > 0
+
+    @staticmethod
     def get_7day_analytics(user_id):
         """
         Computes 7-day time series data, activity distributions, and mood counts
-        for Analytics charts and summary metrics.
+        strictly from MongoDB data.
         """
         db = MongoService.get_db()
-        uid = ObjectId(user_id)
 
         now = datetime.now()
         dates = [(now - timedelta(days=i)) for i in range(6, -1, -1)]
         day_labels = [d.strftime("%a") for d in dates]
         date_strs = [d.strftime("%Y-%m-%d") for d in dates]
+
+        has_data = StatisticsService.has_wellness_history(user_id)
+        if not has_data or db is None:
+            return {
+                "has_data": False,
+                "is_demo": False,
+                "day_labels": day_labels,
+                "wellness_scores": [0, 0, 0, 0, 0, 0, 0],
+                "sleep_hours": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                "meditation_mins": [0, 0, 0, 0, 0, 0, 0],
+                "breathing_mins": [0, 0, 0, 0, 0, 0, 0],
+                "focus_mins": [0, 0, 0, 0, 0, 0, 0],
+                "mood_counts": {},
+                "activity_distribution": {},
+                "total_weekly_activities": 0
+            }
+
+        # Fetch all records for the user across collections (handling both ObjectId and str user_id)
+        b_all = StatisticsService._get_user_docs(db.breathing_sessions, user_id)
+        m_all = StatisticsService._get_user_docs(db.meditation_sessions, user_id)
+        f_all = StatisticsService._get_user_docs(db.focus_sessions, user_id)
+        s_all = StatisticsService._get_user_docs(db.sleep_logs, user_id)
+        mus_all = StatisticsService._get_user_docs(db.music_listening_history, user_id)
+        j_all = StatisticsService._get_user_docs(db.journal_entries, user_id, {"is_deleted": {"$ne": True}})
+        act_all = StatisticsService._get_user_docs(db.activity_logs, user_id)
+        mood_all = StatisticsService._get_user_docs(db.mood_logs, user_id)
+
+        def extract_date_str(doc):
+            for field in ["created_at", "timestamp", "started_at", "sleep_date", "date"]:
+                v = doc.get(field)
+                if v:
+                    if isinstance(v, datetime):
+                        return v.strftime("%Y-%m-%d")
+                    elif isinstance(v, str):
+                        return v[:10]
+            return None
 
         wellness_scores = []
         sleep_hours = []
@@ -158,119 +266,72 @@ class StatisticsService:
         focus_mins = []
 
         for d_str in date_strs:
-            # Daily summary doc if stored
-            sum_doc = db.wellness_daily_summaries.find_one({"user_id": uid, "date": d_str})
-            
             # Sleep hours
-            s_doc = db.sleep_logs.find_one({"user_id": uid, "sleep_date": d_str})
-            if not s_doc:
-                # Fallback check by created_at date
-                s_doc = db.sleep_logs.find_one({
-                    "user_id": uid,
-                    "created_at": {"$gte": datetime.strptime(d_str, "%Y-%m-%d"), "$lt": datetime.strptime(d_str, "%Y-%m-%d") + timedelta(days=1)}
-                })
-            s_hrs = s_doc.get("hours_slept", 7.5) if s_doc else (sum_doc.get("sleep_hours", 7.5) if sum_doc else 7.5)
-            sleep_hours.append(round(s_hrs, 1))
+            s_doc = next((s for s in s_all if extract_date_str(s) == d_str), None)
+            s_hrs = s_doc.get("hours_slept", 0.0) if s_doc else 0.0
+            sleep_hours.append(round(float(s_hrs), 1))
 
             # Breathing mins
-            b_docs = list(db.breathing_sessions.find({
-                "user_id": uid,
-                "created_at": {"$gte": datetime.strptime(d_str, "%Y-%m-%d"), "$lt": datetime.strptime(d_str, "%Y-%m-%d") + timedelta(days=1)}
-            }))
-            b_m = sum(b.get("duration_seconds", 0) for b in b_docs) // 60
-            breathing_mins.append(b_m)
+            b_m = sum(b.get("duration_seconds", 0) for b in b_all if extract_date_str(b) == d_str) // 60
+            breathing_mins.append(int(b_m))
 
             # Meditation mins
-            m_docs = list(db.meditation_sessions.find({
-                "user_id": uid,
-                "created_at": {"$gte": datetime.strptime(d_str, "%Y-%m-%d"), "$lt": datetime.strptime(d_str, "%Y-%m-%d") + timedelta(days=1)}
-            }))
-            m_m = sum(m.get("duration_minutes", 10) for m in m_docs)
-            meditation_mins.append(m_m)
+            m_m = sum(m.get("duration_minutes", 0) for m in m_all if extract_date_str(m) == d_str)
+            meditation_mins.append(int(m_m))
 
             # Focus mins
-            f_docs = list(db.focus_sessions.find({
-                "user_id": uid,
-                "created_at": {"$gte": datetime.strptime(d_str, "%Y-%m-%d"), "$lt": datetime.strptime(d_str, "%Y-%m-%d") + timedelta(days=1)}
-            }))
-            f_m = sum(f.get("total_focus_seconds", 0) for f in f_docs) // 60
-            focus_mins.append(f_m)
+            f_m = sum(f.get("total_focus_seconds", 0) for f in f_all if extract_date_str(f) == d_str) // 60
+            focus_mins.append(int(f_m))
 
-            # Score calculation estimate for each day
-            base_score = 70
-            if s_hrs >= 7.0: base_score += 15
-            elif s_hrs >= 6.0: base_score += 5
-            if (b_m + m_m + f_m) > 0: base_score += 10
-            wellness_scores.append(min(100, max(40, base_score)))
+            # Score calculation
+            if (s_hrs > 0 or b_m > 0 or m_m > 0 or f_m > 0):
+                base_score = 60
+                if s_hrs >= 7.0: base_score += 20
+                elif s_hrs >= 6.0: base_score += 10
+                if (b_m + m_m + f_m) > 0: base_score += 20
+                wellness_scores.append(min(100, max(40, base_score)))
+            else:
+                wellness_scores.append(0)
 
-        # 7-day date threshold for aggregates
-        seven_days_ago = now - timedelta(days=7)
+        # Mood counts over past 7 days
+        mood_counts = {}
+        for m in mood_all:
+            d = extract_date_str(m)
+            if d in date_strs:
+                lbl = m.get("mood_label") or m.get("mood")
+                if lbl:
+                    mood_counts[lbl] = mood_counts.get(lbl, 0) + 1
 
-        # Mood trend frequency over past 7 days
-        mood_counts = {"Happy": 0, "Calm": 0, "Neutral": 0, "Stressed": 0, "Anxious": 0, "Sad": 0}
-        mood_cursor = db.mood_logs.find({"user_id": uid, "timestamp": {"$gte": seven_days_ago}})
-        for m in mood_cursor:
-            lbl = m.get("mood_label") or m.get("mood")
-            if lbl in mood_counts:
-                mood_counts[lbl] += 1
-
-        # Also count moods from journal entries
-        j_cursor = db.journal_entries.find({"user_id": uid, "created_at": {"$gte": seven_days_ago}, "is_deleted": {"$ne": True}})
-        for j in j_cursor:
-            es = j.get("emotion_snapshot") or {}
-            pm = es.get("primary_mood")
-            if pm in mood_counts:
-                mood_counts[pm] += 1
-
-        # Fallback if no moods logged yet
-        if sum(mood_counts.values()) == 0:
-            mood_counts["Calm"] = 2
-            mood_counts["Happy"] = 2
-            mood_counts["Neutral"] = 1
+        # Also check journal entries for primary mood
+        for j in j_all:
+            d = extract_date_str(j)
+            if d in date_strs:
+                es = j.get("emotion_snapshot") or {}
+                pm = es.get("primary_mood")
+                if pm:
+                    mood_counts[pm] = mood_counts.get(pm, 0) + 1
 
         # Activity Distribution over past 7 days
-        b_count = db.breathing_sessions.count_documents({"user_id": uid, "created_at": {"$gte": seven_days_ago}})
-        m_count = db.meditation_sessions.count_documents({"user_id": uid, "created_at": {"$gte": seven_days_ago}})
-        f_count = db.focus_sessions.count_documents({"user_id": uid, "created_at": {"$gte": seven_days_ago}})
-        s_count = db.sleep_logs.count_documents({"user_id": uid, "created_at": {"$gte": seven_days_ago}})
-        mus_count = db.music_listening_history.count_documents({"user_id": uid, "started_at": {"$gte": seven_days_ago}})
-        j_count = db.journal_entries.count_documents({"user_id": uid, "created_at": {"$gte": seven_days_ago}, "is_deleted": {"$ne": True}})
-        act_logs_count = db.activity_logs.count_documents({"user_id": uid, "created_at": {"$gte": seven_days_ago}})
+        b_count = sum(1 for b in b_all if extract_date_str(b) in date_strs)
+        m_count = sum(1 for m in m_all if extract_date_str(m) in date_strs)
+        f_count = sum(1 for f in f_all if extract_date_str(f) in date_strs)
+        s_count = sum(1 for s in s_all if extract_date_str(s) in date_strs)
+        mus_count = sum(1 for mus in mus_all if extract_date_str(mus) in date_strs)
+        j_count = sum(1 for j in j_all if extract_date_str(j) in date_strs)
+        act_logs_count = sum(1 for act in act_all if extract_date_str(act) in date_strs)
 
         total_weekly_activities = b_count + m_count + f_count + s_count + mus_count + j_count + act_logs_count
 
-        # If user has zero real analytics history, generate in-memory realistic DEMO DATA
-        if total_weekly_activities == 0:
-            return {
-                "is_demo": True,
-                "day_labels": day_labels,
-                "wellness_scores": [72, 74, 76, 75, 80, 82, 85],
-                "sleep_hours": [6.5, 7.2, 7.8, 6.9, 8.1, 7.5, 8.0],
-                "meditation_mins": [10, 15, 0, 20, 10, 15, 10],
-                "breathing_mins": [5, 5, 10, 5, 5, 10, 5],
-                "focus_mins": [25, 50, 25, 50, 25, 50, 25],
-                "mood_counts": {"Happy": 3, "Calm": 2, "Neutral": 1, "Stressed": 1},
-                "activity_distribution": {
-                    "Breathing": 5,
-                    "Meditation": 3,
-                    "Focus": 4,
-                    "Sleep": 7,
-                    "Music": 3,
-                    "Journal": 2
-                },
-                "total_weekly_activities": 24
-            }
-
-        activity_distribution = {
-            "Breathing": b_count,
-            "Meditation": m_count,
-            "Focus": f_count,
-            "Sleep": s_count,
-            "Music": mus_count,
-            "Journal": j_count
-        }
+        activity_distribution = {}
+        if b_count > 0: activity_distribution["Breathing"] = b_count
+        if m_count > 0: activity_distribution["Meditation"] = m_count
+        if f_count > 0: activity_distribution["Focus"] = f_count
+        if s_count > 0: activity_distribution["Sleep"] = s_count
+        if mus_count > 0: activity_distribution["Music"] = mus_count
+        if j_count > 0: activity_distribution["Journal"] = j_count
 
         return {
+            "has_data": True,
             "is_demo": False,
             "day_labels": day_labels,
             "wellness_scores": wellness_scores,
@@ -282,6 +343,3 @@ class StatisticsService:
             "activity_distribution": activity_distribution,
             "total_weekly_activities": total_weekly_activities
         }
-
-
-
